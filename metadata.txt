@@ -1,0 +1,20 @@
+[general]
+name:RasterAttributeTable
+description:Display a RAT.
+
+version:1.0
+qgisMinimumVersion:3.0
+experimental:False
+homepage:http://www.itopen.it/
+repository:https://github.com/elpaso/
+tracker:https://github.com/elpaso/
+about:Display a RAT.
+
+changelog:
+    Version 1.0:
+    * initial implementation
+
+
+icon:rat.png
+email:apasotti@gmail.com
+author:Alessandro Pasotti
