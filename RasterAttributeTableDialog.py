@@ -41,19 +41,26 @@ class RasterAttributeTableDialog(QDialog):
         self.mRasterBandsComboBox.currentIndexChanged.connect(
             self.on_mRasterBandsComboBox_currentIndexChanged)
 
+        self.mClassifyButton.clicked.connect(self.on_mClassifyButton_clicked)
+
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.accept)
 
+    def on_mClassifyButton_clicked(self):
+        """Classify"""
+
+        # TODO
+        pass
+
     def on_mRasterBandsComboBox_currentIndexChanged(self, index):
-        """
-        Load RAT for raster band
-        """
+        """Load RAT for raster band"""
 
         if type(index) != int:
             return
 
         self.mRasterTableWidget.clear()
         self.mRasterTableWidget.setSortingEnabled(False)
+        self.mClassifyComboBox.clear()
 
         ds = gdal.OpenEx(self.layer.source())
         if ds:
@@ -75,3 +82,4 @@ class RasterAttributeTableDialog(QDialog):
                             r, c, QTableWidgetItem(rat.GetValueAsString(r, c)))
 
                 self.mRasterTableWidget.setSortingEnabled(True)
+                self.mClassifyComboBox.addItems(headers[2:])

@@ -29,6 +29,27 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Classification</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="mClassifyComboBox"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="mClassifyButton">
+       <property name="text">
+        <string>Classify</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QTableWidget" name="mRasterTableWidget">
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
