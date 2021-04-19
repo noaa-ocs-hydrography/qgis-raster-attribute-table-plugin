@@ -21,9 +21,15 @@ email                : info@itopen.it
 
 import os
 
-from osgeo import gdal
 from qgis.PyQt import QtCore, uic
-from qgis.PyQt.QtWidgets import QDialog, QTableWidgetItem
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QTableWidgetItem,
+    QMessageBox,
+)
+
+from .rat_classify import rat_classify
+from .rat_utils import get_rat
 
 
 class RasterAttributeTableDialog(QDialog):
@@ -47,10 +53,12 @@ class RasterAttributeTableDialog(QDialog):
         self.mButtonBox.rejected.connect(self.accept)
 
     def on_mClassifyButton_clicked(self):
-        """Classify"""
+        """Create a rule paletted unique-value classification"""
 
-        # TODO
-        pass
+        if QMessageBox.Ok == QMessageBox.Question(None, QtCore.QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to proceed?")):
+            band = self.mRasterBandsComboBox.currentValue()
+            column = self.mClassifyComboBox.currentValue()
+            rat_classify(self.layer, band, column)
 
     def on_mRasterBandsComboBox_currentIndexChanged(self, index):
         """Load RAT for raster band"""
@@ -62,24 +70,19 @@ class RasterAttributeTableDialog(QDialog):
         self.mRasterTableWidget.setSortingEnabled(False)
         self.mClassifyComboBox.clear()
 
-        ds = gdal.OpenEx(self.layer.source())
-        if ds:
-            band = ds.GetRasterBand(index + 1)
-            if band:
-                rat = band.GetDefaultRAT()
-                self.mRasterTableWidget.setRowCount(rat.GetRowCount())
-                self.mRasterTableWidget.setColumnCount(rat.GetColumnCount())
-                # Header
-                headers = []
-                for i in range(0, rat.GetColumnCount()):
-                    headers.append(rat.GetNameOfCol(i))
+        rat = get_rat(self.layer, index + 1)
 
-                self.mRasterTableWidget.setHorizontalHeaderLabels(headers)
+        if rat:
+            row_count = len(list(rat.values())[0])
+            self.mRasterTableWidget.setRowCount(row_count)
+            headers = list(rat.keys())
+            self.mRasterTableWidget.setColumnCount(len(headers))
+            self.mRasterTableWidget.setHorizontalHeaderLabels(headers)
 
-                for r in range(0, rat.GetRowCount()):
-                    for c in range(0, rat.GetColumnCount()):
-                        self.mRasterTableWidget.setItem(
-                            r, c, QTableWidgetItem(rat.GetValueAsString(r, c)))
+            for r in range(row_count):
+                for c in range(len(headers)):
+                    self.mRasterTableWidget.setItem(
+                        r, c, QTableWidgetItem(rat[c][r]))
 
-                self.mRasterTableWidget.setSortingEnabled(True)
-                self.mClassifyComboBox.addItems(headers[2:])
+            self.mRasterTableWidget.setSortingEnabled(True)
+            self.mClassifyComboBox.addItems(headers[2:])

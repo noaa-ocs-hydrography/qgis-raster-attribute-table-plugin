@@ -1,0 +1,588 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="COMBINE_DATE">20200923</MDI>
+    <MDI key="VERSION">1</MDI>
+  </Metadata>
+  <Metadata domain="rio_overview">
+    <MDI key="resampling">average</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Description>Contributor</Description>
+    <UnitType>m</UnitType>
+    <GDALRasterAttributeTable>
+      <FieldDefn index="0">
+        <Name>Value</Name>
+        <Type>0</Type>
+        <Usage>5</Usage>
+      </FieldDefn>
+      <FieldDefn index="1">
+        <Name>Count</Name>
+        <Type>0</Type>
+        <Usage>1</Usage>
+      </FieldDefn>
+      <FieldDefn index="2">
+        <Name>data_assessment</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="3">
+        <Name>feature_least_depth</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="4">
+        <Name>significant_features</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="5">
+        <Name>feature_size</Name>
+        <Type>1</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="6">
+        <Name>full_coverage</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="7">
+        <Name>bathy_coverage</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="8">
+        <Name>horizontal_uncert_fixed</Name>
+        <Type>1</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="9">
+        <Name>horizontal_uncert_var</Name>
+        <Type>1</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="10">
+        <Name>License_Name</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="11">
+        <Name>License_URL</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="12">
+        <Name>Source_Survey_ID</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="13">
+        <Name>Source_Institution</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="14">
+        <Name>survey_date_start</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="15">
+        <Name>survey_date_end</Name>
+        <Type>2</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <Row index="0">
+        <F>7</F>
+        <F>26629</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6859_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="1">
+        <F>15</F>
+        <F>113106</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>4</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h12696_mb_2m_mllw_2of3.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2014-04-17</F>
+        <F>2014-05-07</F>
+      </Row>
+      <Row index="2">
+        <F>23</F>
+        <F>24802</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>2</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h12613_mb_1m_mllw_2of3.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2013-08-12</F>
+        <F>2013-09-07</F>
+      </Row>
+      <Row index="3">
+        <F>24</F>
+        <F>6</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>500</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h00741b.csar</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>1874-01-01</F>
+        <F>1902-01-01</F>
+      </Row>
+      <Row index="4">
+        <F>49</F>
+        <F>32495</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h12696_mb_50cm_mllw_1of3.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2014-04-17</F>
+        <F>2014-05-07</F>
+      </Row>
+      <Row index="5">
+        <F>54</F>
+        <F>10559</F>
+        <F>1</F>
+        <F>0</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>0</F>
+        <F>20</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h11296_li_5m_mllw_1of1_upscaled.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2005-09-09</F>
+        <F>2005-09-12</F>
+      </Row>
+      <Row index="6">
+        <F>61</F>
+        <F>5</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>500</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h00741a.csar</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>1859-01-01</F>
+        <F>1902-01-01</F>
+      </Row>
+      <Row index="7">
+        <F>63</F>
+        <F>8040</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6959_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="8">
+        <F>65</F>
+        <F>117630</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>2</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00206_mb_1m_mllw_1of1.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2009-06-11</F>
+        <F>2009-06-20</F>
+      </Row>
+      <Row index="9">
+        <F>79</F>
+        <F>78415</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>2</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00244_mb_1m_mllw_2of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2012-06-06</F>
+        <F>2012-06-18</F>
+      </Row>
+      <Row index="10">
+        <F>80</F>
+        <F>101653</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>2</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00272_mb_1m_mllw_1of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2005-06-07</F>
+        <F>2005-06-20</F>
+      </Row>
+      <Row index="11">
+        <F>84</F>
+        <F>29547</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6860_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="12">
+        <F>85</F>
+        <F>12130</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6960_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="13">
+        <F>89</F>
+        <F>468</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6659_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="14">
+        <F>96</F>
+        <F>4648</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6759_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="15">
+        <F>110</F>
+        <F>655</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>0</F>
+        <F>500</F>
+        <F>0</F>
+        <F>cc-by-4.0</F>
+        <F>https://creativecommons.org/licenses/by/4.0/legalcode</F>
+        <F>gmrt_pbc19n_40mclip.csar</F>
+        <F>Global Multi-Resolution Topography Data Synthesis (GMRT)</F>
+        <F>2020-01-31</F>
+        <F>2020-01-31</F>
+      </Row>
+      <Row index="16">
+        <F>138</F>
+        <F>5712</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>2018_ncmp_nh_19tch6861_bareearth_1mgrid.csar</F>
+        <F>DOD/USACE/JALBTCX -- Joint Airborne Lidar Bathymetry Technical Center of Expertise</F>
+        <F>2018-05-09</F>
+        <F>2018-08-27</F>
+      </Row>
+      <Row index="17">
+        <F>178</F>
+        <F>162851</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>4</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00272_mb_2m_mllw_2of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2005-06-07</F>
+        <F>2005-06-20</F>
+      </Row>
+      <Row index="18">
+        <F>192</F>
+        <F>910</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>50</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h10763.csar</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>1997-01-01</F>
+        <F>1997-01-01</F>
+      </Row>
+      <Row index="19">
+        <F>193</F>
+        <F>31025</F>
+        <F>1</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>50</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h10771.csar</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>1997-01-01</F>
+        <F>1997-01-01</F>
+      </Row>
+      <Row index="20">
+        <F>194</F>
+        <F>19962</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00244_mb_50cm_mllw_1of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2012-06-06</F>
+        <F>2012-06-18</F>
+      </Row>
+      <Row index="21">
+        <F>196</F>
+        <F>89839</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>2</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00274_mb_1m_mllw_1of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2010-06-11</F>
+        <F>2010-06-22</F>
+      </Row>
+      <Row index="22">
+        <F>202</F>
+        <F>75</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h12613_mb_50cm_mllw_1of3.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2013-08-12</F>
+        <F>2013-09-07</F>
+      </Row>
+      <Row index="23">
+        <F>207</F>
+        <F>236667</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>8</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h12613_mb_4m_mllw_3of3.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2013-08-12</F>
+        <F>2013-09-07</F>
+      </Row>
+      <Row index="24">
+        <F>225</F>
+        <F>18612</F>
+        <F>1</F>
+        <F>0</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1</F>
+        <F>1</F>
+        <F>20</F>
+        <F>0</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>h11296_li_5m_mllw_1of1.csar</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>2005-09-09</F>
+        <F>2005-09-12</F>
+      </Row>
+      <Row index="25">
+        <F>235</F>
+        <F>630606</F>
+        <F>1</F>
+        <F>1</F>
+        <F>1</F>
+        <F>4</F>
+        <F>1</F>
+        <F>1</F>
+        <F>5</F>
+        <F>0.05</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>w00274_mb_2m_mllw_2of2.bag</F>
+        <F>DOC/NOAA/NOS/OCS -- External Source Data</F>
+        <F>2010-06-11</F>
+        <F>2010-06-22</F>
+      </Row>
+      <Row index="26">
+        <F>238</F>
+        <F>1425779</F>
+        <F>3</F>
+        <F>0</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>0</F>
+        <F>0</F>
+        <F>1000000</F>
+        <F>1000000</F>
+        <F>cc0-1.0</F>
+        <F>https://creativecommons.org/publicdomain/zero/1.0/legalcode</F>
+        <F>NBS Generalization</F>
+        <F>DOC/NOAA/NOS/OCS -- Office of Coast Survey</F>
+        <F>N/A</F>
+        <F>N/A</F>
+      </Row>
+    </GDALRasterAttributeTable>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">238.0</MDI>
+      <MDI key="STATISTICS_MEAN">197.72006</MDI>
+      <MDI key="STATISTICS_MINIMUM">7.0</MDI>
+      <MDI key="STATISTICS_STDDEV">68.82051</MDI>
+      <MDI key="STATISTICS_VALID_PERCENT">96.11</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>

@@ -1,4 +1,4 @@
-qgis-raster-attribute-table-plugin
+Raster Attribute Table QGIS Plugin
 ==================================
 
-Work in progress
+
