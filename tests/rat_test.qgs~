@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUser="ale" saveDateTime="2021-04-19T18:36:06" version="3.19.0-Master" saveUserFull="Alessandro Pasotti" projectname="">
+<qgis saveUser="ale" saveDateTime="2021-04-19T18:36:35" version="3.19.0-Master" saveUserFull="Alessandro Pasotti" projectname="">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -20,11 +20,15 @@
   </projectCrs>
   <layer-tree-group>
     <customproperties/>
+    <layer-tree-layer legend_split_behavior="0" checked="Qt::Checked" providerKey="gdal" patch_size="-1,-1" id="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be" name="ExistingVegetationTypes_sample" expanded="1" source="./data/ExistingVegetationTypes_sample.img" legend_exp="">
+      <customproperties/>
+    </layer-tree-layer>
     <layer-tree-layer legend_split_behavior="0" checked="Qt::Checked" providerKey="gdal" patch_size="-1,-1" id="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10" name="NBS_US5PSMBE_20200923_0_generalized_p.source_information" expanded="1" source="./data/NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff" legend_exp="">
       <customproperties/>
     </layer-tree-layer>
     <custom-order enabled="0">
       <item>NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10</item>
+      <item>ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be</item>
     </custom-order>
   </layer-tree-group>
   <snapping-settings unit="1" minScale="0" tolerance="12" self-snapping="0" scaleDependencyMode="0" mode="2" enabled="0" intersection-snapping="0" type="1" maxScale="0">
@@ -35,10 +39,10 @@
   <mapcanvas annotationsVisible="1" name="theMapCanvas">
     <units>meters</units>
     <extent>
-      <xmin>364945.85777804016834125</xmin>
-      <ymin>4759916.4447830505669117</ymin>
-      <xmax>372669.80182842729846016</xmax>
-      <ymax>4764559.89326543733477592</ymax>
+      <xmin>365248.25887886399868876</xmin>
+      <ymin>4758937.62016722559928894</ymin>
+      <xmax>372972.20292925112880766</xmax>
+      <ymax>4763581.06864961236715317</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -59,6 +63,11 @@
   </mapcanvas>
   <projectModels/>
   <legend updateDrawingOrder="true">
+    <legendlayer drawingOrder="-1" checked="Qt::Checked" open="true" showFeatureCount="0" name="ExistingVegetationTypes_sample">
+      <filegroup hidden="false" open="true">
+        <legendlayerfile visible="1" layerid="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be" isInOverview="0"/>
+      </filegroup>
+    </legendlayer>
     <legendlayer drawingOrder="-1" checked="Qt::Checked" open="true" showFeatureCount="0" name="NBS_US5PSMBE_20200923_0_generalized_p.source_information">
       <filegroup hidden="false" open="true">
         <legendlayerfile visible="1" layerid="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10" isInOverview="0"/>
@@ -142,6 +151,125 @@
     <blendMode>0</blendMode>
   </main-annotation-layer>
   <projectlayers>
+    <maplayer refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" autoRefreshTime="0" minScale="1e+08" autoRefreshEnabled="0" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" type="raster" maxScale="0">
+      <extent>
+        <xmin>425979.53714812826365232</xmin>
+        <ymin>4010849.48602769151329994</ymin>
+        <xmax>470889.53714812826365232</xmax>
+        <ymax>4047929.48602769151329994</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>-105.82731290197882856</xmin>
+        <ymin>36.23969715024345106</ymin>
+        <xmax>-105.32398417990137318</xmax>
+        <ymax>36.57637752809507248</ymax>
+      </wgs84extent>
+      <id>ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be</id>
+      <datasource>./data/ExistingVegetationTypes_sample.img</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>ExistingVegetationTypes_sample</layername>
+      <srs>
+        <spatialrefsys>
+          <wkt>PROJCRS["NAD83 / UTM zone 13N",BASEGEOGCRS["NAD83",DATUM["North American Datum 1983",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4269]],CONVERSION["UTM zone 13N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-105,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 108°W and 102°W - onshore and offshore. Canada - Northwest Territories; Nunavut; Saskatchewan. United States (USA) - Colorado; Montana; Nebraska; New Mexico; North Dakota; Oklahoma; South Dakota; Texas; Wyoming."],BBOX[28.98,-108,84,-102]],ID["EPSG",26913]]</wkt>
+          <proj4>+proj=utm +zone=13 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>2290</srsid>
+          <srid>26913</srid>
+          <authid>EPSG:26913</authid>
+          <description>NAD83 / UTM zone 13N</description>
+          <projectionacronym>utm</projectionacronym>
+          <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type></type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <wkt></wkt>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider>gdal</provider>
+      <noData>
+        <noDataList useSrcNoData="1" bandNo="1"/>
+      </noData>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <temporal fetchMode="0" mode="0" enabled="0">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <customproperties>
+        <property key="identify/format" value="Value"/>
+      </customproperties>
+      <pipe>
+        <provider>
+          <resampling zoomedInResamplingMethod="nearestNeighbour" enabled="false" maxOversampling="2" zoomedOutResamplingMethod="nearestNeighbour"/>
+        </provider>
+        <rasterrenderer opacity="1" nodataColor="" gradient="BlackToWhite" grayBand="1" alphaBand="-1" type="singlebandgray">
+          <rasterTransparency/>
+          <minMaxOrigin>
+            <limits>MinMax</limits>
+            <extent>WholeRaster</extent>
+            <statAccuracy>Estimated</statAccuracy>
+            <cumulativeCutLower>0.02</cumulativeCutLower>
+            <cumulativeCutUpper>0.98</cumulativeCutUpper>
+            <stdDevFactor>2</stdDevFactor>
+          </minMaxOrigin>
+          <contrastEnhancement>
+            <minValue>11</minValue>
+            <maxValue>2220</maxValue>
+            <algorithm>StretchToMinimumMaximum</algorithm>
+          </contrastEnhancement>
+          <rampLegendSettings maximumLabel="" direction="0" minimumLabel="" useContinuousLegend="1" suffix="" prefix="" orientation="2">
+            <numericFormat id="basic">
+              <Option type="Map">
+                <Option name="decimal_separator" type="QChar" value=""/>
+                <Option name="decimals" type="int" value="6"/>
+                <Option name="rounding_type" type="int" value="0"/>
+                <Option name="show_plus" type="bool" value="false"/>
+                <Option name="show_thousand_separator" type="bool" value="true"/>
+                <Option name="show_trailing_zeros" type="bool" value="false"/>
+                <Option name="thousand_separator" type="QChar" value=""/>
+              </Option>
+            </numericFormat>
+          </rampLegendSettings>
+        </rasterrenderer>
+        <brightnesscontrast brightness="0" contrast="0" gamma="1"/>
+        <huesaturation colorizeRed="255" grayscaleMode="0" colorizeGreen="128" saturation="0" colorizeBlue="128" colorizeStrength="100" colorizeOn="0"/>
+        <rasterresampler maxOversampling="2"/>
+        <resamplingStage>resamplingFilter</resamplingStage>
+      </pipe>
+      <blendMode>0</blendMode>
+    </maplayer>
     <maplayer refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" autoRefreshTime="0" minScale="1e+08" autoRefreshEnabled="0" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" type="raster" maxScale="0">
       <extent>
         <xmin>365454</xmin>
@@ -264,6 +392,7 @@
   </projectlayers>
   <layerorder>
     <layer id="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10"/>
+    <layer id="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be"/>
   </layerorder>
   <properties>
     <Digitizing>
@@ -506,6 +635,19 @@
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
+    <DefaultViewExtent ymax="4763581.06864961236715317" xmin="363736.64292165538063273" ymin="4758937.62016722559928894" xmax="374483.81888645974686369">
+      <spatialrefsys>
+        <wkt>PROJCRS["NAD83 / UTM zone 19N",BASEGEOGCRS["NAD83",DATUM["North American Datum 1983",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4269]],CONVERSION["UTM zone 19N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-69,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 72°W and 66°W - onshore and offshore. Canada - Labrador; New Brunswick; Nova Scotia; Nunavut; Quebec. Puerto Rico. United States (USA) - Connecticut; Maine; Massachusetts; New Hampshire; New York (Long Island); Rhode Island; Vermont."],BBOX[14.92,-72,84,-66]],ID["EPSG",26919]]</wkt>
+        <proj4>+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs</proj4>
+        <srsid>2296</srsid>
+        <srid>26919</srid>
+        <authid>EPSG:26919</authid>
+        <description>NAD83 / UTM zone 19N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </DefaultViewExtent>
   </ProjectViewSettings>
   <ProjectTimeSettings frameRate="1" cumulativeTemporalRange="0" timeStepUnit="h" timeStep="1"/>
   <ProjectDisplaySettings>

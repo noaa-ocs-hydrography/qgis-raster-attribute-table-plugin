@@ -50,9 +50,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="mRasterTableWidget">
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
+    <widget class="QTableView" name="mRATView">
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>28</number>
      </attribute>
     </widget>
    </item>

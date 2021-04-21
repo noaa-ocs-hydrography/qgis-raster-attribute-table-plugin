@@ -19,11 +19,19 @@ from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     QgsVectorLayer,
     QgsPalettedRasterRenderer,
+    QgsSingleBandPseudoColorRenderer,
     QgsRasterBlockFeedback,
     QgsRandomColorRamp,
     QgsMessageLog,
     Qgis,
+    QgsRasterShader,
+    QgsColorRampShader,
 )
+
+try:
+    from .rat_constants import RAT_COLOR_HEADER_NAME
+except ImportError:
+    from rat_constants import RAT_COLOR_HEADER_NAME
 
 
 class RATField:
@@ -154,22 +162,42 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                 continue
 
         if red and green and blue:
-            headers.append('RAT Color')
-            values['RAT Color'] = []
+            headers.append(RAT_COLOR_HEADER_NAME)
+            values[RAT_COLOR_HEADER_NAME] = []
             for i in range(len(values[red])):
                 func = 'fromRgb' if is_integer else 'fromRgbF'
                 if alpha:
-                    values['RAT Color'].append(getattr(QColor, func)(
+                    values[RAT_COLOR_HEADER_NAME].append(getattr(QColor, func)(
                         values[red][i], values[green][i], values[blue][i], values[alpha][i]))
                 else:
-                    values['RAT Color'].append(getattr(QColor, func)(
+                    values[RAT_COLOR_HEADER_NAME].append(getattr(QColor, func)(
                         values[red][i], values[green][i], values[blue][i]))
 
     return RAT(values, is_sidecar, rat_fields)
 
 
-def rat_classify(raster_layer, band, rat, criteria, ramp=QgsRandomColorRamp(), feedback=QgsRasterBlockFeedback()):
-    """Classify a raster
+class ValueMapShader(QgsColorRampShader):
+
+    def __init__(self, minValue, maxValue, ramp, valueMap):
+
+        super().__init__(minValue, maxValue, ramp,
+                         QgsColorRampShader.Exact, QgsColorRampShader.Continuous)
+        self.valueMap = valueMap
+
+    def shade(self, value):
+
+        mapped_value = self.valueMap[value]
+        result = super().shade(mapped_value)
+        res, r, g, b, a = result
+        rat_log(f'Shading {value} to {mapped_value} - {r} {g} {b} {a}')
+        return result
+
+
+def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRasterBlockFeedback()):
+    """Classify a raster.
+
+    Note: cannot use a custom shader function QgsColorRampShader subclass because it's lost in
+          the clone stage of the renderer.
 
     :param raster_layer: the raster layer to classify
     :type raster_layer: QgsRasterLayer
@@ -186,26 +214,80 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=QgsRandomColorRamp(), f
     :return: classes
     :rtype: list
     """
-
+    if ramp is None:
+        ramp = QgsRandomColorRamp()
     classes = QgsPalettedRasterRenderer.classDataFromRaster(
         raster_layer.dataProvider(), band, ramp, feedback)
-    has_color = 'RAT Color' in list(rat.values.keys())
-    values = list(rat.values.values())[0 if not has_color else 1]
+    has_color = RAT_COLOR_HEADER_NAME in list(rat.values.keys())
+    # Values is the first item
+    values = list(rat.values.values())[0]
     labels = rat.values[criteria]
-
     label_colors = {}
+    is_integer = isinstance(values[0], int)
 
     for klass in classes:
-        index = values.index(klass.value)
+        index = values.index(int(klass.value) if is_integer else klass.value)
         klass.label = str(labels[index])
-        if has_color:
-            if klass.label not in label_colors:
-                label_colors[klass.label] = values['RAT Color'][index]
-            klass.setColor(label_colors[klass.label])
+        if klass.label not in label_colors:
+            if has_color:
+                label_colors[klass.label] = rat.values[RAT_COLOR_HEADER_NAME][index]
+            else:
+                label_colors[klass.label] = klass.color
+            klass.color = label_colors[klass.label]
 
+    # Cannot use a custom shader function
+    rat_log('Using paletted renderer')
     renderer = QgsPalettedRasterRenderer(
         raster_layer.dataProvider(), band, classes)
+
+    if False:
+        # Use paletted if there are only distinct classes
+        if len(classes) == len(label_colors):
+            rat_log('Using paletted renderer')
+            renderer = QgsPalettedRasterRenderer(
+                raster_layer.dataProvider(), band, classes)
+
+        else:
+            rat_log('Using singleband pseudocolor renderer')
+            # Reclassify
+            unique_labels = {}
+            # Map values to first class' value
+            value_map = {}
+            mapped_classes = []
+            for klass in classes:
+                if klass.label not in unique_labels:
+                    mapped_classes.append(klass)
+                    unique_labels[klass.label] = klass.value
+                    value_map[klass.value] = klass.value
+                else:
+                    value_map[klass.value] = unique_labels[klass.label]
+
+            classes = mapped_classes
+
+            #minValue = min(value_map.keys())
+            #maxValue = max(value_map.keys())
+            minValue = min(values)
+            maxValue = max(values)
+
+            shader = QgsRasterShader(minValue, maxValue)
+
+            colorRampShaderFcn = ValueMapShader(
+                minValue, maxValue, ramp, value_map)
+            colorRampShaderFcn.setClip(True)
+
+            items = []
+            for label, value in unique_labels.items():
+                items.append(QgsColorRampShader.ColorRampItem(
+                    value, label_colors[label], label))
+
+            colorRampShaderFcn.setColorRampItemList(items)
+            shader.setRasterShaderFunction(colorRampShaderFcn)
+            renderer = QgsSingleBandPseudoColorRenderer(
+                raster_layer.dataProvider(), band, shader)
+
     raster_layer.setRenderer(renderer)
+    raster_layer.triggerRepaint()
+
     return classes
 
 
