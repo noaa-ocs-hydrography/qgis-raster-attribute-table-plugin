@@ -21,18 +21,19 @@ email                : info@itopen.it
 
 import os
 
-from qgis.PyQt import QtCore, uic
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QTableWidgetItem,
-    QMessageBox,
-)
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QBrush
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 
-from .rat_classify import rat_classify
-from .rat_utils import get_rat
+try:
+    from .rat_utils import get_rat, rat_classify, rat_log
+except ImportError:
+    from rat_utils import get_rat, rat_classify, rat_log
 
 
 class RasterAttributeTableDialog(QDialog):
+
     def __init__(self, layer):
         QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -45,22 +46,28 @@ class RasterAttributeTableDialog(QDialog):
         self.mRasterBandsComboBox.addItems(
             [layer.bandName(bn) for bn in range(1, layer.bandCount() + 1)])
         self.mRasterBandsComboBox.currentIndexChanged.connect(
-            self.on_mRasterBandsComboBox_currentIndexChanged)
+            self.load_rat)
 
-        self.mClassifyButton.clicked.connect(self.on_mClassifyButton_clicked)
+        self.load_rat(0)
+
+        self.mClassifyButton.clicked.connect(self.classify)
 
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.accept)
 
-    def on_mClassifyButton_clicked(self):
-        """Create a rule paletted unique-value classification"""
+    def classify(self):
+        """Create a paletted/unique-value classification"""
 
-        if QMessageBox.Ok == QMessageBox.Question(None, QtCore.QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to proceed?")):
-            band = self.mRasterBandsComboBox.currentValue()
-            column = self.mClassifyComboBox.currentValue()
-            rat_classify(self.layer, band, column)
 
-    def on_mRasterBandsComboBox_currentIndexChanged(self, index):
+        if QMessageBox.question(None, QCoreApplication.translate('RAT', "Overwrite classification"), QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
+            band = self.mRasterBandsComboBox.currentIndex() + 1
+            column = self.mClassifyComboBox.currentText()
+            rat = get_rat(self.layer, band)
+            # TODO: ramp & feedback
+            classes = rat_classify(self.layer, band, rat, column)
+            rat_log('Classes: %s' % classes)
+
+    def load_rat(self, index):
         """Load RAT for raster band"""
 
         if type(index) != int:
@@ -71,18 +78,34 @@ class RasterAttributeTableDialog(QDialog):
         self.mClassifyComboBox.clear()
 
         rat = get_rat(self.layer, index + 1)
+        rat_data = rat.values
 
-        if rat:
-            row_count = len(list(rat.values())[0])
+        if rat_data:
+            row_count = len(list(rat_data.values())[0])
             self.mRasterTableWidget.setRowCount(row_count)
-            headers = list(rat.keys())
+            headers = list(rat_data.keys())
+            has_color = 'RAT Color' in headers
+
+            if has_color:
+                headers = headers[:-1]
+                headers.insert(0, 'RAT Color')
+
             self.mRasterTableWidget.setColumnCount(len(headers))
             self.mRasterTableWidget.setHorizontalHeaderLabels(headers)
 
             for r in range(row_count):
-                for c in range(len(headers)):
-                    self.mRasterTableWidget.setItem(
-                        r, c, QTableWidgetItem(rat[c][r]))
+                c = 0
+                for header in headers:
+                    if header == 'RAT Color':
+                        color = rat_data['RAT Color'][r]
+                        widget = QTableWidgetItem(' ')
+                        widget.setBackground(QBrush(color))
+                        self.mRasterTableWidget.setItem(
+                            r, c, widget)
+                    else:
+                        self.mRasterTableWidget.setItem(
+                            r, c, QTableWidgetItem(str(rat_data[header][r])))
+                    c += 1
 
             self.mRasterTableWidget.setSortingEnabled(True)
             self.mClassifyComboBox.addItems(headers[2:])

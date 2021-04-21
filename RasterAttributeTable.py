@@ -21,63 +21,58 @@ import os
 from functools import partial
 
 from osgeo import gdal
-from qgis.core import QgsApplication, QgsMapLayer, QgsMapLayerType, QgsMessageLog, QgsProject
-# Import the PyQt and QGIS libraries
+from qgis.core import (QgsApplication, QgsMapLayer, QgsMapLayerType,
+                       QgsMessageLog, QgsProject, Qgis)
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
-# Import the code for the dialog
 from .RasterAttributeTableDialog import RasterAttributeTableDialog
+from .rat_utils import get_rat, rat_log
 
 
 class RasterAttributeTable(object):
 
     def __init__(self, iface):
-        # Save reference to the QGIS interface
+
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.action = QAction(
             QgsApplication.getThemeIcon("/mActionOpenTable.svg"), QCoreApplication.translate("RAT", "&Open Attribute Table"))
-        self.action.triggered.connect(self.showAttributeTable)
+        rat_log("Init completed")
+
+    def initGui(self):
+
         self.iface.addCustomActionForLayerType(self.action,
                                                None, QgsMapLayerType.RasterLayer, allLayers=False)
 
-    def initGui(self):
-        QgsProject.instance().layerWasAdded.connect(self.populateContextMenu)
+        QgsProject.instance().layerWasAdded.connect(self.connectLegendActions)
 
-    def log(self, message):
-        QgsMessageLog.logMessage(message, "RAT")
+        for layer in list(QgsProject.instance().mapLayers().values()):
+            self.connectLegendActions(layer)
+
+        self.action.triggered.connect(self.showAttributeTable)
+        rat_log("GUI loaded")
 
     def unload(self):
-        # Remove the plugin menu item and icon
-        pass
 
-    def populateContextMenu(self, layer):
+        self.iface.removeCustomActionForLayerType(self.action)
+        rat_log("GUI unloaded")
 
-        self.log("Layer added: %s" % layer.name())
+    def connectLegendActions(self, layer):
 
         if layer and layer.type() == QgsMapLayerType.RasterLayer:
-            ds = gdal.OpenEx(layer.source())
-            if ds:
-                for b in range(1, ds.RasterCount + 1):
-                    band = ds.GetRasterBand(b)
-                    rat = band.GetDefaultRAT()
-                    if rat and rat.GetRowCount() > 0:
-                        self.iface.addCustomActionForLayer(self.action, layer)
-                        self.log("Custom Layer action added for: %s" %
-                                 layer.name())
-                        break
-                del ds
+            for band in range(1, layer.bandCount() + 1):
+                values = get_rat(layer, band).values
+                if values:
+                    self.iface.addCustomActionForLayer(self.action, layer)
+                    rat_log("Custom Layer action added for: %s" %
+                             layer.name())
+                    break
 
     def showAttributeTable(self):
 
-        # Get current raster
         layer = self.iface.activeLayer()
-
-        self.log("Show attribute table for layer: %s" % layer.name())
-
-        # Show the dialog
         self.dlg = RasterAttributeTableDialog(layer)
         self.dlg.show()
 

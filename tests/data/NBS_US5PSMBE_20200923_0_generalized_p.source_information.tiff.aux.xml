@@ -9,7 +9,17 @@
   <PAMRasterBand band="1">
     <Description>Contributor</Description>
     <UnitType>m</UnitType>
-    <GDALRasterAttributeTable>
+    <Histograms>
+      <HistItem>
+        <HistMin>6.502155172413793</HistMin>
+        <HistMax>238.4978448275862</HistMax>
+        <BucketCount>232</BucketCount>
+        <IncludeOutOfRange>0</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>26629|0|0|0|0|0|0|0|113106|0|0|0|0|0|0|0|24802|6|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|32495|0|0|0|0|10559|0|0|0|0|0|0|5|0|8040|0|117630|0|0|0|0|0|0|0|0|0|0|0|0|0|78415|101653|0|0|0|29547|12130|0|0|0|468|0|0|0|0|0|0|4648|0|0|0|0|0|0|0|0|0|0|0|0|0|655|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|5712|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|162851|0|0|0|0|0|0|0|0|0|0|0|0|0|910|31025|19962|0|89839|0|0|0|0|0|75|0|0|0|0|236667|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|18612|0|0|0|0|0|0|0|0|0|630606|0|0|1425779</HistCounts>
+      </HistItem>
+    </Histograms>
+    <GDALRasterAttributeTable tableType="thematic">
       <FieldDefn index="0">
         <Name>Value</Name>
         <Type>0</Type>
@@ -578,10 +588,10 @@
       </Row>
     </GDALRasterAttributeTable>
     <Metadata>
-      <MDI key="STATISTICS_MAXIMUM">238.0</MDI>
-      <MDI key="STATISTICS_MEAN">197.72006</MDI>
-      <MDI key="STATISTICS_MINIMUM">7.0</MDI>
-      <MDI key="STATISTICS_STDDEV">68.82051</MDI>
+      <MDI key="STATISTICS_MAXIMUM">238</MDI>
+      <MDI key="STATISTICS_MEAN">197.72014367107</MDI>
+      <MDI key="STATISTICS_MINIMUM">7</MDI>
+      <MDI key="STATISTICS_STDDEV">68.820520548066</MDI>
       <MDI key="STATISTICS_VALID_PERCENT">96.11</MDI>
     </Metadata>
   </PAMRasterBand>
