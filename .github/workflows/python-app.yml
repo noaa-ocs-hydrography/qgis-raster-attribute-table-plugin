@@ -19,9 +19,9 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
-        pip3 install flake8 pytest xvfb
+        pip3 install flake8 pytest
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-        sudo apt install qgis
+        sudo apt install qgis xvfb
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
