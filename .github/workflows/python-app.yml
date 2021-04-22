@@ -33,10 +33,10 @@ jobs:
         xvfb-run pytest -v
     - name: Prepare artifact
       run: |
-        git archive --prefix RasterAttributeTable/ --format=zip -o rat-plugin.zip master
+        git archive --prefix RAT/RasterAttributeTable/ --format=zip -o rat-plugin.zip master
         unzip rat-plugin.zip
     - uses: actions/upload-artifact@v2
       with:
         name: rat-plugin.zip
-        path: ./RasterAttributeTable
+        path: ./RAT
         
