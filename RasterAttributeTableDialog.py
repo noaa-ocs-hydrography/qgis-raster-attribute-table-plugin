@@ -22,9 +22,9 @@ email                : info@itopen.it
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QByteArray
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsProject, QgsMapLayerLegendUtils, QgsSettings
 
 try:
     from .rat_utils import get_rat, rat_classify, rat_log
@@ -36,7 +36,7 @@ except ImportError:
 
 class RasterAttributeTableDialog(QDialog):
 
-    def __init__(self, layer):
+    def __init__(self, layer, iface=None):
         QDialog.__init__(self)
         # Set up the user interface from Designer.
         ui_path = os.path.join(os.path.dirname(
@@ -44,6 +44,7 @@ class RasterAttributeTableDialog(QDialog):
         uic.loadUi(ui_path, self)
 
         self.layer = layer
+        self.iface = iface
 
         self.mRasterBandsComboBox.addItems(
             [layer.bandName(bn) for bn in range(1, layer.bandCount() + 1)])
@@ -57,15 +58,39 @@ class RasterAttributeTableDialog(QDialog):
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.accept)
 
+        try:
+            self.restoreGeometry(QgsSettings().value(
+                "RasterAttributeTable/geometry", None, QByteArray, QgsSettings.Plugins))
+            rat_log('Dialog geometry restored')
+        except:
+            pass
+
+    def accept(self):
+        QgsSettings().setValue("RasterAttributeTable/geometry",
+                             self.saveGeometry(), QgsSettings.Plugins)
+        rat_log('Dialog geometry saved')
+        super().accept()
+
     def classify(self):
         """Create a paletted/unique-value classification"""
 
         if QMessageBox.question(None, QCoreApplication.translate('RAT', "Overwrite classification"), QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
             band = self.mRasterBandsComboBox.currentIndex() + 1
-            column = self.mClassifyComboBox.currentText()
+            criteria = self.mClassifyComboBox.currentText()
             rat = get_rat(self.layer, band)
             # TODO: ramp & feedback
-            classes = rat_classify(self.layer, band, rat, column)
+            unique_class_row_indexes = rat_classify(
+                self.layer, band, rat, criteria)
+            unique_class_row_indexes.insert(0, 0)
+            if self.iface is not None:
+                model = self.iface.layerTreeView().layerTreeModel()
+                root = QgsProject.instance().layerTreeRoot()
+                node = root.findLayer(self.layer.id())
+                QgsMapLayerLegendUtils.setLegendNodeOrder(
+                    node, unique_class_row_indexes)
+                top_label = model.layerLegendNodes(node)[0]
+                top_label.setUserLabel(criteria)
+                model.refreshLayerLegend(node)
 
     def load_rat(self, index):
         """Load RAT for raster band"""
@@ -76,12 +101,11 @@ class RasterAttributeTableDialog(QDialog):
         self.mClassifyComboBox.clear()
 
         rat = get_rat(self.layer, index + 1)
-        rat_data = rat.values
 
-        if rat_data:
+        if rat.keys:
             self.model = RATModel(rat)
             self.mRATView.setModel(self.model)
-            headers = list(rat_data.keys())
+            headers = rat.keys
             self.mClassifyComboBox.addItems(headers[2:])
         else:
             rat_log(QCoreApplication.translate(

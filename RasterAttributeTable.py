@@ -67,13 +67,13 @@ class RasterAttributeTable(object):
                 if values:
                     self.iface.addCustomActionForLayer(self.action, layer)
                     rat_log("Custom Layer action added for: %s" %
-                             layer.name())
+                            layer.name())
                     break
 
     def showAttributeTable(self):
 
         layer = self.iface.activeLayer()
-        self.dlg = RasterAttributeTableDialog(layer)
+        self.dlg = RasterAttributeTableDialog(layer, self.iface)
         self.dlg.show()
 
 
