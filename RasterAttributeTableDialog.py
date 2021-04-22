@@ -88,8 +88,7 @@ class RasterAttributeTableDialog(QDialog):
                 node = root.findLayer(self.layer.id())
                 QgsMapLayerLegendUtils.setLegendNodeOrder(
                     node, unique_class_row_indexes)
-                top_label = model.layerLegendNodes(node)[0]
-                top_label.setUserLabel(criteria)
+                QgsMapLayerLegendUtils.setLegendNodeUserLabel(node, 0, criteria)
                 model.refreshLayerLegend(node)
 
     def load_rat(self, index):
