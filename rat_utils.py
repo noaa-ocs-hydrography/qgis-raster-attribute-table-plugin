@@ -24,8 +24,8 @@ from qgis.core import (
     QgsRandomColorRamp,
     QgsMessageLog,
     Qgis,
-    QgsRasterShader,
-    QgsColorRampShader,
+    QgsProject,
+    QgsMapLayerLegendUtils,
 )
 
 try:
@@ -270,37 +270,10 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         klass.color = label_colors[klass.label]
         row_index += 1
 
-    # Use paletted if there are only distinct classes
-    if True or len(classes) == len(label_colors):
-        rat_log('Using paletted renderer')
-        renderer = QgsPalettedRasterRenderer(
-            raster_layer.dataProvider(), band, classes)
-
-    else:
-        rat_log('Using singleband pseudocolor renderer')
-
-        minValue = min(values)
-        maxValue = max(values)
-
-        shader = QgsRasterShader(minValue, maxValue)
-
-        colorRampShaderFcn = QgsColorRampShader(
-            minValue, maxValue, ramp)
-        colorRampShaderFcn.setClip(True)
-
-        items = []
-        for klass in classes:
-            items.append(QgsColorRampShader.ColorRampItem(
-                klass.value, klass.color, klass.label))
-
-        colorRampShaderFcn.setColorRampItemList(items)
-        colorRampShaderFcn.setColorRampType(QgsColorRampShader.Exact)
-        colorRampShaderFcn.setSourceColorRamp(
-            colorRampShaderFcn.createColorRamp())
-        colorRampShaderFcn.legendSettings().setUseContinuousLegend(False)
-        shader.setRasterShaderFunction(colorRampShaderFcn)
-        renderer = QgsSingleBandPseudoColorRenderer(
-            raster_layer.dataProvider(), band, shader)
+    # Use paletted
+    rat_log('Using paletted renderer')
+    renderer = QgsPalettedRasterRenderer(
+        raster_layer.dataProvider(), band, classes)
 
     raster_layer.setRenderer(renderer)
     raster_layer.triggerRepaint()
@@ -311,3 +284,43 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
 def rat_log(message, level=Qgis.Info):
 
     QgsMessageLog.logMessage(message, "RAT", level)
+
+
+def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=None, expand=None):
+    """Remove duplicate entries from layer legend.
+
+    :param iface: QGIS interface
+    :type iface: QgisInterface
+    :param layer: raster layer
+    :type layer: QgsRasterLayer
+    :param criteria: classification criteria: label for the legend band
+    :type criteria: str
+    :param unique_class_row_indexes: list of 1-indexed unique entries, defaults to None
+    :type unique_class_row_indexes: list, optional
+    :param expand: whether to expand the legend, defaults to None
+    :type expand: any, optional
+    """
+
+    assert iface is not None
+    model = iface.layerTreeView().layerTreeModel()
+    root = QgsProject.instance().layerTreeRoot()
+    node = root.findLayer(layer.id())
+
+    if unique_class_row_indexes is None:
+        unique_class_row_indexes = [0]
+        renderer = layer.renderer()
+        unique_labels = []
+        idx = 1
+        for klass in renderer.classes():
+            if klass.label not in unique_labels:
+                unique_labels.append(klass.label)
+                unique_class_row_indexes.append(idx)
+            idx += 1
+
+    QgsMapLayerLegendUtils.setLegendNodeOrder(
+        node, unique_class_row_indexes)
+    QgsMapLayerLegendUtils.setLegendNodeUserLabel(
+        node, 0, criteria)
+    model.refreshLayerLegend(node)
+    if expand is not None:
+        node.setExpanded(True)

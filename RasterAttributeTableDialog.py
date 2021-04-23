@@ -24,13 +24,13 @@ import os
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication, QByteArray, QSortFilterProxyModel
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
-from qgis.core import Qgis, QgsApplication, QgsProject, QgsMapLayerLegendUtils, QgsSettings
+from qgis.core import Qgis, QgsApplication, QgsSettings
 
 try:
-    from .rat_utils import get_rat, rat_classify, rat_log
+    from .rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
     from .rat_model import RATModel
 except ImportError:
-    from rat_utils import get_rat, rat_classify, rat_log
+    from rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
     from rat_model import RATModel
 
 
@@ -127,14 +127,8 @@ class RasterAttributeTableDialog(QDialog):
                 self.layer, band, rat, criteria)
             unique_class_row_indexes.insert(0, 0)
             if self.iface is not None:
-                model = self.iface.layerTreeView().layerTreeModel()
-                root = QgsProject.instance().layerTreeRoot()
-                node = root.findLayer(self.layer.id())
-                QgsMapLayerLegendUtils.setLegendNodeOrder(
-                    node, unique_class_row_indexes)
-                QgsMapLayerLegendUtils.setLegendNodeUserLabel(
-                    node, 0, criteria)
-                model.refreshLayerLegend(node)
+                deduplicate_legend_entries(
+                    self.iface, self.layer, criteria, unique_class_row_indexes, expand=True)
 
     def dirty(self, *args):
 
