@@ -74,6 +74,8 @@ class RatUtilsTest(TestCase):
         self.assertTrue(raster_layer.isValid())
 
         rat = get_rat(raster_layer, 1)
+        self.assertIsNotNone(rat.path)
+        self.assertIn('ExistingVegetationTypes_sample.img.vat.dbf', rat.path)
         self.assertTrue(rat.is_sidecar)
         self.assertEqual(rat.keys, [
             'VALUE',

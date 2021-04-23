@@ -35,8 +35,18 @@ except ImportError:
 
 
 class RATField:
+    """RAT field"""
 
     def __init__(self, name, usage, type):
+        """Create a RAT field
+
+        :param name: name
+        :type name: str
+        :param usage: field usage type from gdal.GFU_*
+        :type usage: enum GDALRATFieldUsage
+        :param type: data type from gdal.GFT_* (Real, Int, String)
+        :type type: enum GDALRATFieldType
+        """
         self.name = name
         self.usage = usage
         self.type = type
@@ -45,11 +55,23 @@ class RATField:
 class RAT:
     """Encapsulate RAT table data"""
 
-    def __init__(self, data, is_sidecar, fields):
+    def __init__(self, data, is_sidecar, fields, path=None):
+        """Create a RAT
+
+        :param data: dictionary with RAT data
+        :type data: dict
+        :param is_sidecar: TRUE if is a sidecar RAT
+        :type is_sidecar: bool
+        :param fields: dictionary of RAT fields, name is the key
+        :type fields: dict
+        :param path: optional, path to the sidecar file
+        :type fields: str
+        """
 
         self.__data = data
         self.is_sidecar = is_sidecar
         self.fields = fields
+        self.path = path
 
     @property
     def values(self):
@@ -88,6 +110,8 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
     headers = []
     values = {}
     fields = {}
+    # For sidecar files
+    path = None
 
     COLOR_ROLES = (gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha)
 
@@ -124,11 +148,13 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
         filename = info.fileName()
         candidates = (basename + '.dbf', basename + '.vat.dbf',
                       filename + '.dbf', filename + '.vat.dbf')
+
         for candidate in candidates:
             if os.path.exists(os.path.join(directory, candidate)):
                 rat_layer = QgsVectorLayer(os.path.join(
                     directory, candidate), 'rat', 'ogr')
                 if rat_layer.isValid():
+                    path = os.path.join(directory, candidate)
                     for f in rat_layer.fields():
                         headers.append(f.name())
                         if f.name().upper() in colors:
@@ -194,7 +220,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                     values[RAT_COLOR_HEADER_NAME].append(getattr(QColor, func)(
                         values[red][i], values[green][i], values[blue][i]))
 
-    return RAT(values, is_sidecar, fields)
+    return RAT(values, is_sidecar, fields, path)
 
 
 def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRasterBlockFeedback()):

@@ -75,7 +75,3 @@ class RasterAttributeTable(object):
         layer = self.iface.activeLayer()
         self.dlg = RasterAttributeTableDialog(layer, self.iface)
         self.dlg.show()
-
-
-if __name__ == "__main__":
-    pass
