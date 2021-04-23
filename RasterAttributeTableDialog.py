@@ -22,7 +22,7 @@ email                : info@itopen.it
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication, QByteArray
+from qgis.PyQt.QtCore import QCoreApplication, QByteArray, QSortFilterProxyModel
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 from qgis.core import Qgis, QgsProject, QgsMapLayerLegendUtils, QgsSettings
 
@@ -103,7 +103,9 @@ class RasterAttributeTableDialog(QDialog):
 
         if rat.keys:
             self.model = RATModel(rat)
-            self.mRATView.setModel(self.model)
+            self.proxyModel = QSortFilterProxyModel(self)
+            self.proxyModel.setSourceModel(self.model)
+            self.mRATView.setModel(self.proxyModel)
             headers = rat.keys
             self.mClassifyComboBox.addItems(headers[2:])
         else:

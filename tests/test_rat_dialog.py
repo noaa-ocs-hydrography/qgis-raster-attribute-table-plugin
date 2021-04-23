@@ -58,7 +58,7 @@ class RasterAttributeTableDialogTest(TestCase):
             0, Qt.Horizontal), RAT_COLOR_HEADER_NAME)
         self.assertEqual(header_model.headerData(1, Qt.Horizontal), 'VALUE')
 
-        #dialog.exec_()
+        dialog.exec_()
 
 
 if __name__ == '__main__':
