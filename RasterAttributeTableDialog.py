@@ -24,7 +24,7 @@ import os
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication, QByteArray, QSortFilterProxyModel
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
-from qgis.core import Qgis, QgsProject, QgsMapLayerLegendUtils, QgsSettings
+from qgis.core import Qgis, QgsApplication, QgsProject, QgsMapLayerLegendUtils, QgsSettings
 
 try:
     from .rat_utils import get_rat, rat_classify, rat_log
@@ -37,6 +37,7 @@ except ImportError:
 class RasterAttributeTableDialog(QDialog):
 
     def __init__(self, layer, iface=None):
+
         QDialog.__init__(self)
         # Set up the user interface from Designer.
         ui_path = os.path.join(os.path.dirname(
@@ -45,18 +46,42 @@ class RasterAttributeTableDialog(QDialog):
 
         self.layer = layer
         self.iface = iface
+        self.editable = False
+        self.is_dirty = False
 
         self.mRasterBandsComboBox.addItems(
             [layer.bandName(bn) for bn in range(1, layer.bandCount() + 1)])
-        self.mRasterBandsComboBox.currentIndexChanged.connect(
-            self.load_rat)
+
+        self.mToggleEditingToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionToggleEditing.svg"))
+        self.mAddColumnToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionNewAttribute.svg"))
+        self.mRemoveColumnToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionDeleteAttribute.svg"))
+        self.mSaveChangesToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionSaveAllEdits.svg"))
+
+        stylesheet = "QToolButton {padding: 1px;}"
+        self.mToggleEditingToolButton.setStyleSheet(stylesheet)
+        self.mAddColumnToolButton.setStyleSheet(
+            stylesheet)
+        self.mRemoveColumnToolButton.setStyleSheet(
+            stylesheet)
+        self.mSaveChangesToolButton.setStyleSheet(
+            stylesheet)
 
         self.load_rat(0)
+        self.setEditable(False)
 
+        # Connections
         self.mClassifyButton.clicked.connect(self.classify)
-
+        self.mRasterBandsComboBox.currentIndexChanged.connect(
+            self.load_rat)
         self.mButtonBox.accepted.connect(self.accept)
-        self.mButtonBox.rejected.connect(self.accept)
+        self.mButtonBox.rejected.connect(self.reject)
+
+        self.mToggleEditingToolButton.toggled.connect(self.setEditable)
+        self.mSaveChangesToolButton.clicked.connect(self.saveChanges)
 
         try:
             self.restoreGeometry(QgsSettings().value(
@@ -65,11 +90,30 @@ class RasterAttributeTableDialog(QDialog):
         except:
             pass
 
+    def setEditable(self, editable):
+
+        self.editable = editable
+        self.mAddColumnToolButton.setEnabled(editable)
+        self.mRemoveColumnToolButton.setEnabled(editable)
+        self.mSaveChangesToolButton.setEnabled(self.is_dirty)
+        self.model.setEditable(editable)
+
+    def saveChanges(self):
+        """Store changes back into the RAT"""
+
+        # TODO: implement this
+        QMessageBox.warning(None, 'NOT IMPLEMENTED', 'NOT IMPLEMENTED: TODO')
+
     def accept(self):
         QgsSettings().setValue("RasterAttributeTable/geometry",
-                             self.saveGeometry(), QgsSettings.Plugins)
+                               self.saveGeometry(), QgsSettings.Plugins)
         rat_log('Dialog geometry saved')
         super().accept()
+
+    def reject(self):
+
+        if not self.is_dirty or QMessageBox.question(None, QCoreApplication.translate('RAT', "Save RAT changes"), QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to leave this dialog?")) == QMessageBox.Yes:
+            self.accept()
 
     def classify(self):
         """Create a paletted/unique-value classification"""
@@ -88,8 +132,14 @@ class RasterAttributeTableDialog(QDialog):
                 node = root.findLayer(self.layer.id())
                 QgsMapLayerLegendUtils.setLegendNodeOrder(
                     node, unique_class_row_indexes)
-                QgsMapLayerLegendUtils.setLegendNodeUserLabel(node, 0, criteria)
+                QgsMapLayerLegendUtils.setLegendNodeUserLabel(
+                    node, 0, criteria)
                 model.refreshLayerLegend(node)
+
+    def dirty(self, *args):
+
+        self.is_dirty = True
+        self.mSaveChangesToolButton.setEnabled(self.is_dirty)
 
     def load_rat(self, index):
         """Load RAT for raster band"""
@@ -103,6 +153,7 @@ class RasterAttributeTableDialog(QDialog):
 
         if rat.keys:
             self.model = RATModel(rat)
+            self.model.dataChanged.connect(self.dirty)
             self.proxyModel = QSortFilterProxyModel(self)
             self.proxyModel.setSourceModel(self.model)
             self.mRATView.setModel(self.proxyModel)
