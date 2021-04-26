@@ -14,3 +14,4 @@ __copyright__ = 'Copyright 2021, ItOpen'
 
 
 RAT_COLOR_HEADER_NAME = 'RAT Color'
+RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA = 'RasterAttributeTable-Criteria'

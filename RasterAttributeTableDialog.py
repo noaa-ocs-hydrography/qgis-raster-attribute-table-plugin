@@ -29,9 +29,11 @@ from qgis.core import Qgis, QgsApplication, QgsSettings
 try:
     from .rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
     from .rat_model import RATModel
+    from .rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 except ImportError:
     from rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
     from rat_model import RATModel
+    from rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 
 
 class RasterAttributeTableDialog(QDialog):
@@ -129,6 +131,8 @@ class RasterAttributeTableDialog(QDialog):
             if self.iface is not None:
                 deduplicate_legend_entries(
                     self.iface, self.layer, criteria, unique_class_row_indexes, expand=True)
+            # Adopt the layer
+            self.layer.setCustomProperty(RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, criteria)
 
     def dirty(self, *args):
 
@@ -153,6 +157,9 @@ class RasterAttributeTableDialog(QDialog):
             self.mRATView.setModel(self.proxyModel)
             headers = rat.keys
             self.mClassifyComboBox.addItems(headers[2:])
+            criteria = self.layer.customProperty(RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
+            if criteria in headers:
+                self.mClassifyComboBox.setCurrentIndex(self.mClassifyComboBox.findText(criteria))
         else:
             rat_log(QCoreApplication.translate(
                 'RAT', 'There is no Raster Attribute Table for the selected raster.'), Qgis.Critical)
