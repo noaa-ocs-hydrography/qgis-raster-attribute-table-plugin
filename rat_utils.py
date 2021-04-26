@@ -93,6 +93,18 @@ class RAT:
 
         return RAT_COLOR_HEADER_NAME in self.keys
 
+    def save_as(self, path):
+        """Save a copy of the RAT to path"""
+        pass
+
+    def save(self):
+        """Saves a modified RAT"""
+
+        self.save_as(self.path)
+
+
+
+
 
 def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
     """Extracts RAT from raster layer and given band
@@ -324,3 +336,4 @@ def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=
     model.refreshLayerLegend(node)
     if expand is not None:
         node.setExpanded(True)
+
