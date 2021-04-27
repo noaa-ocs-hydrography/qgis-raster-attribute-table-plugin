@@ -13,6 +13,7 @@ __date__ = '2021-04-19'
 __copyright__ = 'Copyright 2021, ItOpen'
 
 import os
+import shutil
 from unittest import TestCase, main
 
 from qgis.core import (
@@ -21,6 +22,8 @@ from qgis.core import (
     QgsSingleBandPseudoColorRenderer,
     QgsPalettedRasterRenderer,
 )
+
+from qgis.PyQt.QtCore import QTemporaryDir
 from rat_utils import get_rat, rat_classify
 from rat_constants import RAT_COLOR_HEADER_NAME
 
@@ -160,6 +163,58 @@ class RatUtilsTest(TestCase):
         criteria = 'SYSTMGRPPH'
         self._test_classify(raster_layer, criteria)
 
+    def test_rat_save_dbf(self):
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img.aux.xml'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img'), tmp_dir.path())
+
+        dest_raster_layer = QgsRasterLayer(os.path.join(tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        rat = get_rat(dest_raster_layer, 1)
+        self.assertFalse(rat.isValid())
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        self.assertTrue(rat.save_as_dbf(os.path.join(tmp_dir.path(), 'ExistingVegetationTypes_sample.img')))
+
+        dest_raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        rat_new = get_rat(dest_raster_layer, 1)
+        self.assertTrue(rat_new.isValid())
+        self.assertEqual(rat_new.data, rat.data)
+
+    def test_rat_save_xml(self):
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.tiff.aux.xml'), tmp_dir.path())
+
+        dest_raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
+        rat = get_rat(dest_raster_layer, 1)
+        self.assertFalse(rat.isValid())
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
+
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        # Note: band 1
+        self.assertTrue(rat.save_as_xml(os.path.join(
+            tmp_dir.path(), 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 1))
+
+        dest_raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
+        rat_new = get_rat(dest_raster_layer, 1)
+        self.assertTrue(rat_new.isValid())
+        self.assertEqual(rat_new.data, rat.data)
 
 if __name__ == '__main__':
     main()

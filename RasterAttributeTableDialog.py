@@ -94,6 +94,11 @@ class RasterAttributeTableDialog(QDialog):
 
     def setEditable(self, editable):
 
+        if not editable and self.is_dirty and QMessageBox.question(None,
+                QCoreApplication.translate('RAT', "Save RAT changes"),
+                QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to continue?")) == QMessageBox.No:
+            return
+
         self.editable = editable
         self.mAddColumnToolButton.setEnabled(editable)
         self.mRemoveColumnToolButton.setEnabled(editable)
@@ -114,13 +119,17 @@ class RasterAttributeTableDialog(QDialog):
 
     def reject(self):
 
-        if not self.is_dirty or QMessageBox.question(None, QCoreApplication.translate('RAT', "Save RAT changes"), QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to leave this dialog?")) == QMessageBox.Yes:
+        if not self.is_dirty or QMessageBox.question(None,
+                QCoreApplication.translate('RAT', "Save RAT changes"),
+                QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to leave this dialog?")) == QMessageBox.Yes:
             self.accept()
 
     def classify(self):
         """Create a paletted/unique-value classification"""
 
-        if QMessageBox.question(None, QCoreApplication.translate('RAT', "Overwrite classification"), QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
+        if QMessageBox.question(None,
+                QCoreApplication.translate('RAT', "Overwrite classification"),
+                QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
             band = self.mRasterBandsComboBox.currentIndex() + 1
             criteria = self.mClassifyComboBox.currentText()
             rat = get_rat(self.layer, band)

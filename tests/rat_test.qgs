@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.19.0-Master" projectname="" saveUser="ale" saveUserFull="Alessandro Pasotti" saveDateTime="2021-04-26T17:43:39">
+<qgis projectname="" saveUserFull="Alessandro Pasotti" saveDateTime="2021-04-27T12:09:11" version="3.19.0-Master" saveUser="ale">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -20,16 +20,16 @@
   </projectCrs>
   <layer-tree-group>
     <customproperties/>
-    <layer-tree-layer id="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be" patch_size="-1,-1" name="ExistingVegetationTypes_sample" legend_split_behavior="0" providerKey="gdal" legend_exp="" source="./data/ExistingVegetationTypes_sample.img" checked="Qt::Checked" expanded="1">
+    <layer-tree-layer legend_exp="" name="ExistingVegetationTypes_sample" providerKey="gdal" source="./data/ExistingVegetationTypes_sample.img" patch_size="-1,-1" expanded="1" legend_split_behavior="0" checked="Qt::Checked" id="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be">
       <customproperties>
         <property value="SYSTMGRPPH" key="legend/label-0"/>
         <property value="0,1,3,13,15,19,20,21,32,52,55" key="legend/node-order"/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer id="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10" patch_size="-1,-1" name="NBS_US5PSMBE_20200923_0_generalized_p.source_information" legend_split_behavior="0" providerKey="gdal" legend_exp="" source="./data/NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff" checked="Qt::Checked" expanded="1">
+    <layer-tree-layer legend_exp="" name="NBS_US5PSMBE_20200923_0_generalized_p.source_information" providerKey="gdal" source="./data/NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff" patch_size="-1,-1" expanded="1" legend_split_behavior="0" checked="Qt::Checked" id="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10">
       <customproperties>
-        <property value="full_coverage" key="legend/label-0"/>
-        <property value="0,1,6" key="legend/node-order"/>
+        <property value="horizontal_uncert_fixed" key="legend/label-0"/>
+        <property value="0,1,4,6,19,27" key="legend/node-order"/>
       </customproperties>
     </layer-tree-layer>
     <custom-order enabled="0">
@@ -37,18 +37,18 @@
       <item>ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be</item>
     </custom-order>
   </layer-tree-group>
-  <snapping-settings tolerance="12" type="1" minScale="0" intersection-snapping="0" self-snapping="0" enabled="0" mode="2" scaleDependencyMode="0" maxScale="0" unit="1">
+  <snapping-settings minScale="0" intersection-snapping="0" maxScale="0" type="1" unit="1" mode="2" scaleDependencyMode="0" tolerance="12" self-snapping="0" enabled="0">
     <individual-layer-settings/>
   </snapping-settings>
   <relations/>
   <polymorphicRelations/>
-  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+  <mapcanvas annotationsVisible="1" name="theMapCanvas">
     <units>meters</units>
     <extent>
-      <xmin>-2868626.41678767465054989</xmin>
-      <ymin>4684355.63023011479526758</ymin>
-      <xmax>-2801641.10152968391776085</xmax>
-      <ymax>4746472.81124928127974272</ymax>
+      <xmin>365297.20000000001164153</xmin>
+      <ymin>4759026.79999999981373549</ymin>
+      <xmax>371882.79999999998835847</xmax>
+      <ymax>4767897.20000000018626451</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -71,43 +71,18 @@
   <legend updateDrawingOrder="true">
     <legendlayer name="ExistingVegetationTypes_sample" open="true" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
       <filegroup open="true" hidden="false">
-        <legendlayerfile layerid="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be" isInOverview="0" visible="1"/>
+        <legendlayerfile visible="1" isInOverview="0" layerid="ExistingVegetationTypes_sample_f4d05044_7336_45fd_915d_375a255e06be"/>
       </filegroup>
     </legendlayer>
     <legendlayer name="NBS_US5PSMBE_20200923_0_generalized_p.source_information" open="true" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
       <filegroup open="true" hidden="false">
-        <legendlayerfile layerid="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10" isInOverview="0" visible="1"/>
+        <legendlayerfile visible="1" isInOverview="0" layerid="NBS_US5PSMBE_20200923_0_generalized_p_source_information_938164af_bf64_4adb_9da0_834a722c9f10"/>
       </filegroup>
     </legendlayer>
   </legend>
   <mapViewDocks/>
   <mapViewDocks3D/>
-  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
-    <units>meters</units>
-    <extent>
-      <xmin>-2868626.41678767465054989</xmin>
-      <ymin>4684355.63023011479526758</ymin>
-      <xmax>-2801641.10152968391776085</xmax>
-      <ymax>4746472.81124928127974272</ymax>
-    </extent>
-    <rotation>0</rotation>
-    <destinationsrs>
-      <spatialrefsys>
-        <wkt>PROJCRS["NAD83 / UTM zone 19N",BASEGEOGCRS["NAD83",DATUM["North American Datum 1983",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4269]],CONVERSION["UTM zone 19N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-69,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 72°W and 66°W - onshore and offshore. Canada - Labrador; New Brunswick; Nova Scotia; Nunavut; Quebec. Puerto Rico. United States (USA) - Connecticut; Maine; Massachusetts; New Hampshire; New York (Long Island); Rhode Island; Vermont."],BBOX[14.92,-72,84,-66]],ID["EPSG",26919]]</wkt>
-        <proj4>+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs</proj4>
-        <srsid>2296</srsid>
-        <srid>26919</srid>
-        <authid>EPSG:26919</authid>
-        <description>NAD83 / UTM zone 19N</description>
-        <projectionacronym>utm</projectionacronym>
-        <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
-        <geographicflag>false</geographicflag>
-      </spatialrefsys>
-    </destinationsrs>
-    <rendermaptile>0</rendermaptile>
-    <expressionContextScope/>
-  </mapcanvas>
-  <main-annotation-layer type="annotation" refreshOnNotifyEnabled="0" autoRefreshEnabled="0" refreshOnNotifyMessage="" autoRefreshTime="0">
+  <main-annotation-layer autoRefreshEnabled="0" type="annotation" refreshOnNotifyMessage="" autoRefreshTime="0" refreshOnNotifyEnabled="0">
     <id>Annotations_b83f9dc2_bfe8_4ba7_84d8_53cb5d95c86e</id>
     <datasource></datasource>
     <keywordList>
@@ -124,7 +99,7 @@
         <description></description>
         <projectionacronym></projectionacronym>
         <ellipsoidacronym></ellipsoidacronym>
-        <geographicflag>false</geographicflag>
+        <geographicflag>true</geographicflag>
       </spatialrefsys>
     </srs>
     <resourceMetadata>
@@ -147,7 +122,7 @@
           <description></description>
           <projectionacronym></projectionacronym>
           <ellipsoidacronym></ellipsoidacronym>
-          <geographicflag>false</geographicflag>
+          <geographicflag>true</geographicflag>
         </spatialrefsys>
       </crs>
       <extent/>
@@ -157,7 +132,7 @@
     <blendMode>0</blendMode>
   </main-annotation-layer>
   <projectlayers>
-    <maplayer hasScaleBasedVisibilityFlag="0" type="raster" minScale="1e+08" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" autoRefreshEnabled="0" maxScale="0" refreshOnNotifyMessage="" autoRefreshTime="0">
+    <maplayer autoRefreshEnabled="0" styleCategories="AllStyleCategories" minScale="1e+08" maxScale="0" type="raster" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" autoRefreshTime="0" refreshOnNotifyEnabled="0">
       <extent>
         <xmin>425979.53714812826365232</xmin>
         <ymin>4010849.48602769151329994</ymin>
@@ -209,14 +184,14 @@
             <description></description>
             <projectionacronym></projectionacronym>
             <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>false</geographicflag>
+            <geographicflag>true</geographicflag>
           </spatialrefsys>
         </crs>
         <extent/>
       </resourceMetadata>
       <provider>gdal</provider>
       <noData>
-        <noDataList bandNo="1" useSrcNoData="1"/>
+        <noDataList useSrcNoData="1" bandNo="1"/>
       </noData>
       <map-layer-style-manager current="default">
         <map-layer-style name="default"/>
@@ -227,7 +202,7 @@
         <Searchable>1</Searchable>
         <Private>0</Private>
       </flags>
-      <temporal enabled="0" mode="0" fetchMode="0">
+      <temporal fetchMode="0" mode="0" enabled="0">
         <fixedRange>
           <start></start>
           <end></end>
@@ -240,9 +215,9 @@
       </customproperties>
       <pipe>
         <provider>
-          <resampling zoomedOutResamplingMethod="nearestNeighbour" zoomedInResamplingMethod="nearestNeighbour" enabled="false" maxOversampling="2"/>
+          <resampling zoomedOutResamplingMethod="nearestNeighbour" maxOversampling="2" zoomedInResamplingMethod="nearestNeighbour" enabled="false"/>
         </provider>
-        <rasterrenderer band="1" alphaBand="-1" type="paletted" opacity="1" nodataColor="">
+        <rasterrenderer nodataColor="" opacity="1" alphaBand="-1" type="paletted" band="1">
           <minMaxOrigin>
             <limits>None</limits>
             <extent>WholeRaster</extent>
@@ -252,75 +227,75 @@
             <stdDevFactor>2</stdDevFactor>
           </minMaxOrigin>
           <colorPalette>
-            <paletteEntry value="11" label="Non-vegetated" alpha="255" color="#0000ff"/>
-            <paletteEntry value="12" label="Non-vegetated" alpha="255" color="#0000ff"/>
-            <paletteEntry value="13" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="14" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="16" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="17" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="21" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="22" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="23" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="24" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="25" label="Developed" alpha="255" color="#343434"/>
-            <paletteEntry value="31" label="Non-vegetated" alpha="255" color="#0000ff"/>
-            <paletteEntry value="65" label="Agricultural" alpha="255" color="#ffd277"/>
-            <paletteEntry value="66" label="Agricultural" alpha="255" color="#ffd277"/>
-            <paletteEntry value="75" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="81" label="Agricultural" alpha="255" color="#ffd277"/>
-            <paletteEntry value="82" label="Agricultural" alpha="255" color="#ffd277"/>
-            <paletteEntry value="95" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2011" label="Hardwood" alpha="255" color="#c0ff8a"/>
-            <paletteEntry value="2016" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2023" label="Conifer-Hardwood" alpha="255" color="#00ed00"/>
-            <paletteEntry value="2050" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2051" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2052" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2054" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2055" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2056" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2057" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2059" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2061" label="Conifer-Hardwood" alpha="255" color="#00ed00"/>
-            <paletteEntry value="2070" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2076" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2080" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2081" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2086" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2093" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2095" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2100" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2104" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2107" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2115" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2117" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2119" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2121" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2127" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2133" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2135" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2144" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2145" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2146" label="Grassland" alpha="255" color="#7f38ff"/>
-            <paletteEntry value="2153" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2155" label="Riparian" alpha="255" color="#51b48d"/>
-            <paletteEntry value="2159" label="Riparian" alpha="255" color="#51b48d"/>
-            <paletteEntry value="2160" label="Riparian" alpha="255" color="#51b48d"/>
-            <paletteEntry value="2182" label="Exotic Herbaceous" alpha="255" color="#ff692e"/>
-            <paletteEntry value="2183" label="Exotic Herbaceous" alpha="255" color="#ff692e"/>
-            <paletteEntry value="2208" label="Conifer" alpha="255" color="#79ff5e"/>
-            <paletteEntry value="2217" label="Shrubland" alpha="255" color="#967b59"/>
-            <paletteEntry value="2220" label="Shrubland" alpha="255" color="#967b59"/>
+            <paletteEntry alpha="255" color="#0000ff" value="11" label="Non-vegetated"/>
+            <paletteEntry alpha="255" color="#0000ff" value="12" label="Non-vegetated"/>
+            <paletteEntry alpha="255" color="#343434" value="13" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="14" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="16" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="17" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="21" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="22" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="23" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="24" label="Developed"/>
+            <paletteEntry alpha="255" color="#343434" value="25" label="Developed"/>
+            <paletteEntry alpha="255" color="#0000ff" value="31" label="Non-vegetated"/>
+            <paletteEntry alpha="255" color="#ffd277" value="65" label="Agricultural"/>
+            <paletteEntry alpha="255" color="#ffd277" value="66" label="Agricultural"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="75" label="Grassland"/>
+            <paletteEntry alpha="255" color="#ffd277" value="81" label="Agricultural"/>
+            <paletteEntry alpha="255" color="#ffd277" value="82" label="Agricultural"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="95" label="Grassland"/>
+            <paletteEntry alpha="255" color="#c0ff8a" value="2011" label="Hardwood"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2016" label="Conifer"/>
+            <paletteEntry alpha="255" color="#00ed00" value="2023" label="Conifer-Hardwood"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2050" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2051" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2052" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2054" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2055" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2056" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2057" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2059" label="Conifer"/>
+            <paletteEntry alpha="255" color="#00ed00" value="2061" label="Conifer-Hardwood"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2070" label="Grassland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2076" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2080" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2081" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2086" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2093" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2095" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2100" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2104" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2107" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2115" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2117" label="Conifer"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2119" label="Conifer"/>
+            <paletteEntry alpha="255" color="#967b59" value="2121" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2127" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2133" label="Grassland"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2135" label="Grassland"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2144" label="Grassland"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2145" label="Grassland"/>
+            <paletteEntry alpha="255" color="#7f38ff" value="2146" label="Grassland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2153" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#51b48d" value="2155" label="Riparian"/>
+            <paletteEntry alpha="255" color="#51b48d" value="2159" label="Riparian"/>
+            <paletteEntry alpha="255" color="#51b48d" value="2160" label="Riparian"/>
+            <paletteEntry alpha="255" color="#ff692e" value="2182" label="Exotic Herbaceous"/>
+            <paletteEntry alpha="255" color="#ff692e" value="2183" label="Exotic Herbaceous"/>
+            <paletteEntry alpha="255" color="#79ff5e" value="2208" label="Conifer"/>
+            <paletteEntry alpha="255" color="#967b59" value="2217" label="Shrubland"/>
+            <paletteEntry alpha="255" color="#967b59" value="2220" label="Shrubland"/>
           </colorPalette>
         </rasterrenderer>
-        <brightnesscontrast gamma="1" brightness="0" contrast="0"/>
-        <huesaturation colorizeRed="255" colorizeOn="0" grayscaleMode="0" saturation="0" colorizeStrength="100" colorizeGreen="128" colorizeBlue="128"/>
+        <brightnesscontrast contrast="0" gamma="1" brightness="0"/>
+        <huesaturation saturation="0" colorizeOn="0" grayscaleMode="0" colorizeGreen="128" colorizeBlue="128" colorizeRed="255" colorizeStrength="100"/>
         <rasterresampler maxOversampling="2"/>
         <resamplingStage>resamplingFilter</resamplingStage>
       </pipe>
       <blendMode>0</blendMode>
     </maplayer>
-    <maplayer hasScaleBasedVisibilityFlag="0" type="raster" minScale="1e+08" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" autoRefreshEnabled="0" maxScale="0" refreshOnNotifyMessage="" autoRefreshTime="0">
+    <maplayer autoRefreshEnabled="0" styleCategories="AllStyleCategories" minScale="1e+08" maxScale="0" type="raster" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" autoRefreshTime="0" refreshOnNotifyEnabled="0">
       <extent>
         <xmin>365454</xmin>
         <ymin>4759238</ymin>
@@ -372,14 +347,14 @@
             <description></description>
             <projectionacronym></projectionacronym>
             <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>false</geographicflag>
+            <geographicflag>true</geographicflag>
           </spatialrefsys>
         </crs>
         <extent/>
       </resourceMetadata>
       <provider>gdal</provider>
       <noData>
-        <noDataList bandNo="1" useSrcNoData="1"/>
+        <noDataList useSrcNoData="1" bandNo="1"/>
       </noData>
       <map-layer-style-manager current="default">
         <map-layer-style name="default"/>
@@ -390,21 +365,21 @@
         <Searchable>1</Searchable>
         <Private>0</Private>
       </flags>
-      <temporal enabled="0" mode="0" fetchMode="0">
+      <temporal fetchMode="0" mode="0" enabled="0">
         <fixedRange>
           <start></start>
           <end></end>
         </fixedRange>
       </temporal>
       <customproperties>
-        <property value="full_coverage" key="RasterAttributeTable-Criteria"/>
+        <property value="horizontal_uncert_fixed" key="RasterAttributeTable-Criteria"/>
         <property value="Value" key="identify/format"/>
       </customproperties>
       <pipe>
         <provider>
-          <resampling zoomedOutResamplingMethod="nearestNeighbour" zoomedInResamplingMethod="nearestNeighbour" enabled="false" maxOversampling="2"/>
+          <resampling zoomedOutResamplingMethod="nearestNeighbour" maxOversampling="2" zoomedInResamplingMethod="nearestNeighbour" enabled="false"/>
         </provider>
-        <rasterrenderer band="1" alphaBand="-1" type="paletted" opacity="1" nodataColor="">
+        <rasterrenderer nodataColor="" opacity="1" alphaBand="-1" type="paletted" band="1">
           <minMaxOrigin>
             <limits>None</limits>
             <extent>WholeRaster</extent>
@@ -414,37 +389,37 @@
             <stdDevFactor>2</stdDevFactor>
           </minMaxOrigin>
           <colorPalette>
-            <paletteEntry value="7" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="15" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="23" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="24" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="49" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="54" label="0" alpha="255" color="#ca5cec"/>
-            <paletteEntry value="61" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="63" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="65" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="79" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="80" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="84" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="85" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="89" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="96" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="110" label="0" alpha="255" color="#ca5cec"/>
-            <paletteEntry value="138" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="178" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="192" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="193" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="194" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="196" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="202" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="207" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="225" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="235" label="1" alpha="255" color="#b2d141"/>
-            <paletteEntry value="238" label="0" alpha="255" color="#ca5cec"/>
+            <paletteEntry alpha="255" color="#3793e3" value="7" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="15" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="23" label="5.0"/>
+            <paletteEntry alpha="255" color="#c876c5" value="24" label="500.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="49" label="5.0"/>
+            <paletteEntry alpha="255" color="#e37179" value="54" label="20.0"/>
+            <paletteEntry alpha="255" color="#c876c5" value="61" label="500.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="63" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="65" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="79" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="80" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="84" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="85" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="89" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="96" label="5.0"/>
+            <paletteEntry alpha="255" color="#c876c5" value="110" label="500.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="138" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="178" label="5.0"/>
+            <paletteEntry alpha="255" color="#aadc15" value="192" label="50.0"/>
+            <paletteEntry alpha="255" color="#aadc15" value="193" label="50.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="194" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="196" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="202" label="5.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="207" label="5.0"/>
+            <paletteEntry alpha="255" color="#e37179" value="225" label="20.0"/>
+            <paletteEntry alpha="255" color="#3793e3" value="235" label="5.0"/>
+            <paletteEntry alpha="255" color="#c452e1" value="238" label="1000000.0"/>
           </colorPalette>
         </rasterrenderer>
-        <brightnesscontrast gamma="1" brightness="0" contrast="0"/>
-        <huesaturation colorizeRed="255" colorizeOn="0" grayscaleMode="0" saturation="0" colorizeStrength="100" colorizeGreen="128" colorizeBlue="128"/>
+        <brightnesscontrast contrast="0" gamma="1" brightness="0"/>
+        <huesaturation saturation="0" colorizeOn="0" grayscaleMode="0" colorizeGreen="128" colorizeBlue="128" colorizeRed="255" colorizeStrength="100"/>
         <rasterresampler maxOversampling="2"/>
         <resamplingStage>resamplingFilter</resamplingStage>
       </pipe>
@@ -504,14 +479,14 @@
   </properties>
   <dataDefinedServerProperties>
     <Option type="Map">
-      <Option value="" name="name" type="QString"/>
+      <Option name="name" type="QString" value=""/>
       <Option name="properties"/>
-      <Option value="collection" name="type" type="QString"/>
+      <Option name="type" type="QString" value="collection"/>
     </Option>
   </dataDefinedServerProperties>
   <visibility-presets/>
   <transformContext>
-    <srcDest coordinateOp="+proj=pipeline +step +inv +proj=utm +zone=11 +ellps=clrk66 +step +proj=push +v_3 +step +proj=cart +ellps=clrk66 +step +proj=helmert +x=-10 +y=158 +z=187 +step +inv +proj=cart +ellps=WGS84 +step +proj=pop +v_3 +step +proj=unitconvert +xy_in=rad +xy_out=deg" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="+proj=pipeline +step +inv +proj=utm +zone=11 +ellps=clrk66 +step +proj=push +v_3 +step +proj=cart +ellps=clrk66 +step +proj=helmert +x=-10 +y=158 +z=187 +step +inv +proj=cart +ellps=WGS84 +step +proj=pop +v_3 +step +proj=unitconvert +xy_in=rad +xy_out=deg">
       <src>
         <spatialrefsys>
           <wkt>PROJCRS["NAD27 / UTM zone 11N",BASEGEOGCRS["NAD27",DATUM["North American Datum 1927",ELLIPSOID["Clarke 1866",6378206.4,294.978698213898,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4267]],CONVERSION["UTM zone 11N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-117,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 120°W and 114°W - onshore. Canada - Alberta; British Columbia; Northwest Territories; Nunavut. Mexico. United States (USA) - California; Idaho; Nevada; Oregon; Washington."],BBOX[26.93,-120,78.13,-114]],ID["EPSG",26711]]</wkt>
@@ -539,7 +514,7 @@
         </spatialrefsys>
       </dest>
     </srcDest>
-    <srcDest coordinateOp="+proj=pipeline +step +inv +proj=utm +zone=19 +ellps=GRS80 +step +proj=unitconvert +xy_in=rad +xy_out=deg" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="+proj=pipeline +step +inv +proj=utm +zone=19 +ellps=GRS80 +step +proj=unitconvert +xy_in=rad +xy_out=deg">
       <src>
         <spatialrefsys>
           <wkt>PROJCRS["NAD83 / UTM zone 19N",BASEGEOGCRS["NAD83",DATUM["North American Datum 1983",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4269]],CONVERSION["UTM zone 19N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-69,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 72°W and 66°W - onshore and offshore. Canada - Labrador; New Brunswick; Nova Scotia; Nunavut; Quebec. Puerto Rico. United States (USA) - Connecticut; Maine; Massachusetts; New Hampshire; New York (Long Island); Rhode Island; Vermont."],BBOX[14.92,-72,84,-66]],ID["EPSG",26919]]</wkt>
@@ -567,7 +542,7 @@
         </spatialrefsys>
       </dest>
     </srcDest>
-    <srcDest coordinateOp="+proj=pipeline +step +inv +proj=sterea +lat_0=52.1561605555556 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +step +proj=push +v_3 +step +proj=cart +ellps=bessel +step +proj=helmert +x=565.4171 +y=50.3319 +z=465.5524 +rx=0.398957388243134 +ry=-0.343987817378283 +rz=1.87740163998045 +s=4.0725 +convention=coordinate_frame +step +inv +proj=cart +ellps=WGS84 +step +proj=pop +v_3 +step +proj=unitconvert +xy_in=rad +xy_out=deg" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="+proj=pipeline +step +inv +proj=sterea +lat_0=52.1561605555556 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +step +proj=push +v_3 +step +proj=cart +ellps=bessel +step +proj=helmert +x=565.4171 +y=50.3319 +z=465.5524 +rx=0.398957388243134 +ry=-0.343987817378283 +rz=1.87740163998045 +s=4.0725 +convention=coordinate_frame +step +inv +proj=cart +ellps=WGS84 +step +proj=pop +v_3 +step +proj=unitconvert +xy_in=rad +xy_out=deg">
       <src>
         <spatialrefsys>
           <wkt>PROJCRS["Amersfoort / RD New",BASEGEOGCRS["Amersfoort",DATUM["Amersfoort",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4289]],CONVERSION["RD New",METHOD["Oblique Stereographic",ID["EPSG",9809]],PARAMETER["Latitude of natural origin",52.1561605555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",5.38763888888889,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9999079,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",155000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",463000,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Netherlands - onshore, including Waddenzee, Dutch Wadden Islands and 12-mile offshore coastal zone."],BBOX[50.75,3.2,53.7,7.22]],ID["EPSG",28992]]</wkt>
@@ -595,7 +570,7 @@
         </spatialrefsys>
       </dest>
     </srcDest>
-    <srcDest coordinateOp="" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="">
       <src>
         <spatialrefsys>
           <wkt>PROJCRS["WGS 84 / UTM zone 48N",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["UTM zone 48N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",105,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Between 102°E and 108°E, northern hemisphere between equator and 84°N, onshore and offshore. Cambodia. China. Indonesia. Laos. Malaysia - West Malaysia. Mongolia. Russian Federation. Singapore. Thailand. Vietnam."],BBOX[0,102,84,108]],ID["EPSG",32648]]</wkt>
@@ -623,7 +598,7 @@
         </spatialrefsys>
       </dest>
     </srcDest>
-    <srcDest coordinateOp="" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="">
       <src>
         <spatialrefsys>
           <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
@@ -651,7 +626,7 @@
         </spatialrefsys>
       </dest>
     </srcDest>
-    <srcDest coordinateOp="" allowFallback="1">
+    <srcDest allowFallback="1" coordinateOp="">
       <src>
         <spatialrefsys>
           <wkt>GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
@@ -696,7 +671,7 @@
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
-    <DefaultViewExtent xmax="-2763249.22362621640786529" ymin="4684355.63023011479526758" ymax="4746472.81124928127974272" xmin="-2907018.29469114216044545">
+    <DefaultViewExtent ymax="4767897.20000000018626451" xmin="360194.66426735185086727" ymin="4759026.79999999981373549" xmax="376985.33573264814913273">
       <spatialrefsys>
         <wkt>PROJCRS["NAD83 / UTM zone 19N",BASEGEOGCRS["NAD83",DATUM["North American Datum 1983",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4269]],CONVERSION["UTM zone 19N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-69,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["North America - between 72°W and 66°W - onshore and offshore. Canada - Labrador; New Brunswick; Nova Scotia; Nunavut; Quebec. Puerto Rico. United States (USA) - Connecticut; Maine; Massachusetts; New Hampshire; New York (Long Island); Rhode Island; Vermont."],BBOX[14.92,-72,84,-66]],ID["EPSG",26919]]</wkt>
         <proj4>+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs</proj4>
@@ -710,18 +685,18 @@
       </spatialrefsys>
     </DefaultViewExtent>
   </ProjectViewSettings>
-  <ProjectTimeSettings timeStep="1" timeStepUnit="h" cumulativeTemporalRange="0" frameRate="1"/>
+  <ProjectTimeSettings frameRate="1" timeStepUnit="h" cumulativeTemporalRange="0" timeStep="1"/>
   <ProjectDisplaySettings>
     <BearingFormat id="bearing">
       <Option type="Map">
-        <Option value="" name="decimal_separator" type="QChar"/>
-        <Option value="6" name="decimals" type="int"/>
-        <Option value="0" name="direction_format" type="int"/>
-        <Option value="0" name="rounding_type" type="int"/>
-        <Option value="false" name="show_plus" type="bool"/>
-        <Option value="true" name="show_thousand_separator" type="bool"/>
-        <Option value="false" name="show_trailing_zeros" type="bool"/>
-        <Option value="" name="thousand_separator" type="QChar"/>
+        <Option name="decimal_separator" type="QChar" value=""/>
+        <Option name="decimals" type="int" value="6"/>
+        <Option name="direction_format" type="int" value="0"/>
+        <Option name="rounding_type" type="int" value="0"/>
+        <Option name="show_plus" type="bool" value="false"/>
+        <Option name="show_thousand_separator" type="bool" value="true"/>
+        <Option name="show_trailing_zeros" type="bool" value="false"/>
+        <Option name="thousand_separator" type="QChar" value=""/>
       </Option>
     </BearingFormat>
   </ProjectDisplaySettings>
