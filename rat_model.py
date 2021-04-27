@@ -20,8 +20,12 @@ from qgis.PyQt.QtGui import QBrush, QColor
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
+    from .rat_utils import rat_log, RATField
+    from .rat_classes import RATField
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME
+    from rat_utils import rat_log, RATField
+    from rat_classes import RATField
 
 
 class RATModel(QAbstractTableModel):
@@ -36,14 +40,20 @@ class RATModel(QAbstractTableModel):
 
         super().__init__(parent)
         self.rat = rat
-        self.row_count = len(self.rat.values[0])
-        self.headers = self.rat.keys
-        self.has_color = rat.has_color
         self.editable = False
 
+    @property
+    def has_color(self):
+
+        return self.rat.has_color
+
+    @property
+    def headers(self):
+
+        headers = list(self.rat.fields.keys())
         if self.has_color:
-            self.headers = self.headers[:-1]
-            self.headers.insert(0, RAT_COLOR_HEADER_NAME)
+            headers.insert(0, RAT_COLOR_HEADER_NAME)
+        return headers
 
     def setEditable(self, editable):
 
@@ -118,24 +128,50 @@ class RATModel(QAbstractTableModel):
 
     def rowCount(self, index, parent=QModelIndex()):
 
-        return self.row_count
+        return len(self.rat.values[0])
 
     def columnCount(self, index, parent=QModelIndex()):
 
         return len(self.headers)
 
-    def insertRows(self, row, count, parent=QModelIndex()):
+    ###########################################################
+    # Utilities to manipulate columns, not part of QT model API
 
-        return True
+    def insert_column(self, index, field) -> (bool, str):
+        """Inserts a field into the RAT a position index
 
-    def removeRows(self, row, count, parent=QModelIndex()):
+        :param index: insertion point
+        :type index: int
+        :param field: RAT field to insert
+        :type field: RATField
+        :return: (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
 
-        return True
+        assert isinstance(field, RATField)
+        rat_index = index - 1 if self.rat.has_color else index
+        self.beginInsertColumns(self.index(0, 0), index, 1)
+        result, error_message = self.rat.insert_column(rat_index, field)
+        if result:
+            self.insertColumn(index, self.index(0,0))
+        self.endInsertColumns()
+        return result, error_message
 
-    def insertColumns(self, column, count, parent=QModelIndex()):
+    def remove_column(self, index) -> (bool, str):
+        """Removes the column at index.
 
-        return True
+        :param index: column to remove (0-indexed)
+        :type index: int
+        :return: (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
 
-    def removeColumns(self, column, count, parent=QModelIndex()):
+        column_name = self.headers[index]
+        self.beginRemoveColumns(self.index(0, 0), index, 1)
+        result, error_message = self.rat.remove_column(column_name)
+        if result:
+            self.removeColumn(index, self.index(0, 0))
+        self.endRemoveColumns()
+        return result, error_message
 
-        return True
+

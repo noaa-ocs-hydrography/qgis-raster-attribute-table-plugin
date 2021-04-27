@@ -24,184 +24,16 @@ from qgis.core import (
     QgsRandomColorRamp,
     QgsMessageLog,
     Qgis,
-    QgsFields,
-    QgsField,
     QgsProject,
     QgsMapLayerLegendUtils,
-    QgsVectorFileWriter,
-    QgsCoordinateTransformContext,
-    QgsCoordinateReferenceSystem,
-    QgsWkbTypes,
-    QgsFeature,
 )
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
+    from .rat_classes import RATField, RAT
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME
-
-
-class RATField:
-    """RAT field"""
-
-    def __init__(self, name, usage, type):
-        """Create a RAT field
-
-        :param name: name
-        :type name: str
-        :param usage: field usage type from gdal.GFU_*
-        :type usage: enum GDALRATFieldUsage
-        :param type: data type from gdal.GFT_* (Real, Int, String)
-        :type type: enum GDALRATFieldType
-        """
-        self.name = name
-        self.usage = usage
-        self.type = type
-
-    def qgis_type(self):
-        """Returns the QVariant type of the field
-
-        :raises Exception: in case of unhandled type
-        :return: QVariant type of the field
-        :rtype: QVariant
-        """
-
-        if self.type == gdal.GFT_Integer:
-            return QVariant.Int
-        elif self.type == gdal.GFT_Real:
-            return QVariant.Double
-        elif self.type == gdal.GFT_String:
-            return QVariant.String
-        else:
-            raise Exception('Unhandled RAT field type:  %s' % self.type)
-
-
-class RAT:
-    """Encapsulate RAT table data"""
-
-    def __init__(self, data, is_sidecar, fields, path=None):
-        """Create a RAT
-
-        :param data: dictionary with RAT data
-        :type data: dict
-        :param is_sidecar: TRUE if is a sidecar RAT
-        :type is_sidecar: bool
-        :param fields: dictionary of RAT fields, name is the key
-        :type fields: dict
-        :param path: optional, path to the sidecar file
-        :type fields: str
-        """
-
-        self.__data = data
-        self.is_sidecar = is_sidecar
-        self.fields = fields
-        self.path = path
-
-    @property
-    def values(self):
-
-        return list(self.__data.values())
-
-    @property
-    def keys(self):
-
-        return list(self.__data.keys())
-
-    @property
-    def data(self):
-
-        return self.__data
-
-    def isValid(self):
-
-        return len(self.keys) > 0
-
-    @property
-    def has_color(self):
-
-        return RAT_COLOR_HEADER_NAME in self.keys
-
-    def qgis_fields(self):
-
-        fields = QgsFields()
-
-        # collect fields
-        for field in list(self.fields.values()):
-            qgis_field = QgsField(field.name, field.qgis_type(
-            ), comment='RAT usage: %s' % field.usage)
-            fields.append(qgis_field)
-
-        return fields
-
-    def qgis_features(self):
-
-        features = []
-        fields = self.qgis_fields()
-        for row_index in range(len(self.values[0])):
-            feature = QgsFeature(fields)
-            attributes = []
-            for header in self.keys:
-                attributes.append(self.data[header][row_index])
-            feature.setAttributes(attributes)
-            features.append(feature)
-
-        return features
-
-    def save_as_dbf(self, raster_source):
-        """Save/export a copy of the RAT to path"""
-
-        if not raster_source.upper().endswith('.VAT'):
-            raster_source = raster_source + '.vat'
-
-        options = QgsVectorFileWriter.SaveVectorOptions()
-        options.driverName = 'ESRI Shapefile'
-        options.layerOptions = ['SHPT=NULL']
-
-        writer = QgsVectorFileWriter.create(
-            raster_source, self.qgis_fields(), QgsWkbTypes.Unknown, QgsCoordinateReferenceSystem(), QgsCoordinateTransformContext(), options)
-
-        return writer.addFeatures(self.qgis_features())
-
-    def save_as_xml(self, raster_source, band):
-
-        ds = gdal.OpenEx(raster_source)
-        if ds:
-            band = ds.GetRasterBand(band)
-            if band:
-                rat = gdal.RasterAttributeTable()
-                for field in list(self.fields.values()):
-                    rat.CreateColumn(field.name, field.type, field.usage)
-
-                type_map = {gdal.GFT_Integer: 'Int',
-                            gdal.GFT_Real: 'Double', gdal.GFT_String: 'String'}
-
-                column_index = 0
-
-                for field_name, values in self.data.items():
-                    field = self.fields[field_name]
-                    func = getattr(rat, 'SetValueAs%s' % type_map[field.type])
-
-                    for row_index in range(len(values)):
-                        func(row_index, column_index, values[row_index])
-
-                    column_index += 1
-
-                assert rat.GetColumnCount() == len(self.keys)
-                assert rat.GetRowCount() == len(self.values[0])
-
-                band.SetDefaultRAT(rat)
-
-                return True
-
-        return False
-
-
-    def save(self):
-        """Saves a modified RAT"""
-
-        return self.save_as(self.path)
-
-
+    from rat_classes import RATField, RAT
 
 
 def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
@@ -249,6 +81,8 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                             values[headers[c]].append(rat.GetValueAsDouble(r, c))
                         else:
                             values[headers[c]].append(rat.GetValueAsString(r, c))
+
+            path = raster_layer.source() + '.aux.xml'
 
     # Search for sidecar DBF files, `band` is ignored!
     if not values:

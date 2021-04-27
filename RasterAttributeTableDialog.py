@@ -72,13 +72,13 @@ class RasterAttributeTableDialog(QDialog):
         self.mSaveChangesToolButton.setStyleSheet(
             stylesheet)
 
-        self.load_rat(0)
+        self.loadRat(0)
         self.setEditable(False)
 
         # Connections
         self.mClassifyButton.clicked.connect(self.classify)
         self.mRasterBandsComboBox.currentIndexChanged.connect(
-            self.load_rat)
+            self.loadRat)
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.reject)
 
@@ -94,10 +94,13 @@ class RasterAttributeTableDialog(QDialog):
 
     def setEditable(self, editable):
 
-        if not editable and self.is_dirty and QMessageBox.question(None,
-                QCoreApplication.translate('RAT', "Save RAT changes"),
-                QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to continue?")) == QMessageBox.No:
-            return
+        if not editable and self.is_dirty:
+            if QMessageBox.question(None,
+                    QCoreApplication.translate('RAT', "Save RAT changes"),
+                    QCoreApplication.translate('RAT', "RAT has been modified, Do you want to save the changes?")) == QMessageBox.Yes:
+                self.saveChanges()
+            else:
+                self.loadRat(self.mRasterBandsComboBox.currentIndex())
 
         self.editable = editable
         self.mAddColumnToolButton.setEnabled(editable)
@@ -107,6 +110,10 @@ class RasterAttributeTableDialog(QDialog):
 
     def saveChanges(self):
         """Store changes back into the RAT"""
+
+        rat = self.model.rat
+
+        rat.save(self.layer.source())
 
         # TODO: implement this
         QMessageBox.warning(None, 'NOT IMPLEMENTED', 'NOT IMPLEMENTED: TODO')
@@ -148,15 +155,15 @@ class RasterAttributeTableDialog(QDialog):
         self.is_dirty = True
         self.mSaveChangesToolButton.setEnabled(self.is_dirty)
 
-    def load_rat(self, index):
-        """Load RAT for raster band"""
+    def loadRat(self, band_0_based):
+        """Load RAT for raster band 0-based"""
 
-        if type(index) != int:
+        if type(band_0_based) != int:
             return
 
         self.mClassifyComboBox.clear()
 
-        rat = get_rat(self.layer, index + 1)
+        rat = get_rat(self.layer, band_0_based + 1)
 
         if rat.keys:
             self.model = RATModel(rat)
