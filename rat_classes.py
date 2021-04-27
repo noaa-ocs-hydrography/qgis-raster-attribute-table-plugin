@@ -13,7 +13,7 @@ __date__ = '2021-04-27'
 __copyright__ = 'Copyright 2021, ItOpen'
 
 from osgeo import gdal
-
+import os
 from qgis.PyQt.QtCore import QVariant, QCoreApplication
 from qgis.core import (
     QgsFields,
