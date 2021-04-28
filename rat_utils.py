@@ -19,7 +19,6 @@ from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     QgsVectorLayer,
     QgsPalettedRasterRenderer,
-    QgsSingleBandPseudoColorRenderer,
     QgsRasterBlockFeedback,
     QgsRandomColorRamp,
     QgsMessageLog,
@@ -78,9 +77,11 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                         if fields[column].type == gdal.GFT_Integer:
                             values[headers[c]].append(rat.GetValueAsInt(r, c))
                         elif fields[column].type == gdal.GFT_Real:
-                            values[headers[c]].append(rat.GetValueAsDouble(r, c))
+                            values[headers[c]].append(
+                                rat.GetValueAsDouble(r, c))
                         else:
-                            values[headers[c]].append(rat.GetValueAsString(r, c))
+                            values[headers[c]].append(
+                                rat.GetValueAsString(r, c))
 
             path = raster_layer.source() + '.aux.xml'
 
@@ -270,3 +271,33 @@ def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=
     if expand is not None:
         node.setExpanded(True)
 
+
+def has_rat(raster_layer) -> bool:
+    """Returns TRUE if the raster layer has a RAT table
+
+    :param raster_layer: raster layer
+    :type raster_layer: QgsRasterLayer
+    :return: TRUE if the layer renderer has a RAT
+    :rtype: bool
+    """
+
+    if not raster_layer.isValid():
+        return False
+
+    for band in range(raster_layer.bandCount() + 1):
+        if get_rat(raster_layer, band).isValid():
+            return True
+
+    return False
+
+def can_create_rat(raster_layer) -> bool:
+    """Returns TRUE if a RAT can be created from the raster_layer
+
+    :param raster_layer: raster layer
+    :type raster_layer: QgsRasterLayer
+    :return: TRUE if the layer renderer is compatible with a RAT
+    :rtype: bool
+    """
+
+    # TODO: handle singleband pseudocolor
+    return raster_layer.isValid() and isinstance(raster_layer.renderer(), (QgsPalettedRasterRenderer, ))

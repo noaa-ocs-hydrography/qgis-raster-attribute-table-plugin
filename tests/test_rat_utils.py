@@ -24,7 +24,7 @@ from qgis.core import (
 )
 
 from qgis.PyQt.QtCore import QTemporaryDir
-from rat_utils import get_rat, rat_classify
+from rat_utils import get_rat, rat_classify, has_rat, can_create_rat
 from rat_constants import RAT_COLOR_HEADER_NAME
 
 
@@ -216,6 +216,32 @@ class RatUtilsTest(TestCase):
         rat_new = get_rat(dest_raster_layer, 1)
         self.assertTrue(rat_new.isValid())
         self.assertEqual(rat_new.data, rat.data)
+
+    def test_has_rat(self):
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
+        self.assertTrue(has_rat(raster_layer))
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        self.assertTrue(has_rat(raster_layer))
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.tiff'), 'rat_test', 'gdal')
+        self.assertFalse(has_rat(raster_layer))
+
+    def test_can_create_rat(self):
+
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.tiff'), 'rat_test', 'gdal')
+        self.assertFalse(can_create_rat(raster_layer))
+
+        renderer = QgsPalettedRasterRenderer(raster_layer.dataProvider(), 1, [])
+        raster_layer.setRenderer(renderer)
+        self.assertTrue(can_create_rat(raster_layer))
+
+
 
 if __name__ == '__main__':
     main()

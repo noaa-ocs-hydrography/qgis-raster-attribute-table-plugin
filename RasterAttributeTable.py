@@ -28,7 +28,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton
 
 from .RasterAttributeTableDialog import RasterAttributeTableDialog
-from .rat_utils import get_rat, rat_log
+from .rat_utils import rat_log, has_rat
 from .rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 
 
@@ -64,7 +64,7 @@ class RasterAttributeTable(object):
 
         if layer and layer.type() == QgsMapLayerType.RasterLayer:
             for band in range(1, layer.bandCount() + 1):
-                values = get_rat(layer, band).values
+                values = has_rat(layer)
                 if values:
                     self.iface.addCustomActionForLayer(self.action, layer)
                     # If layer was not adopted, notify the user the a RAT exists
