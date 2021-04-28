@@ -169,6 +169,8 @@ class RAT:
         writer = QgsVectorFileWriter.create(
             raster_source, self.qgis_fields(), QgsWkbTypes.Unknown, QgsCoordinateReferenceSystem(), QgsCoordinateTransformContext(), options)
 
+        self.path = raster_source + '.dbf'
+
         return writer.addFeatures(self.qgis_features())
 
     def save_as_xml(self, raster_source, band) -> bool:
