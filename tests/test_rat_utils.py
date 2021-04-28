@@ -21,10 +21,12 @@ from qgis.core import (
     QgsRasterLayer,
     QgsSingleBandPseudoColorRenderer,
     QgsPalettedRasterRenderer,
+    QgsRandomColorRamp,
+    QgsProject,
 )
 
 from qgis.PyQt.QtCore import QTemporaryDir
-from rat_utils import get_rat, rat_classify, has_rat, can_create_rat
+from rat_utils import get_rat, rat_classify, has_rat, can_create_rat, create_rat_from_raster
 from rat_constants import RAT_COLOR_HEADER_NAME
 
 
@@ -39,7 +41,7 @@ class RatUtilsTest(TestCase):
     @classmethod
     def tearDownClass(cls):
 
-        pass
+        cls.qgs.exitQgis()
 
     def test_embedded_rat(self):
 
@@ -241,6 +243,65 @@ class RatUtilsTest(TestCase):
         raster_layer.setRenderer(renderer)
         self.assertTrue(can_create_rat(raster_layer))
 
+    def test_rat_create(self):
+
+        def _test(is_sidecar):
+
+            QgsProject.instance().removeAllMapLayers()
+
+            tmp_dir = QTemporaryDir()
+            shutil.copy(os.path.join(os.path.dirname(
+                __file__), 'data', 'raster-palette.tif'), tmp_dir.path())
+
+            rat_path = os.path.join(
+                tmp_dir.path(), 'raster-palette.tif' + ('.vat.dbf' if is_sidecar else '.aux.xml'))
+            self.assertFalse(os.path.exists(rat_path))
+
+            raster_layer = QgsRasterLayer(os.path.join(tmp_dir.path(), 'raster-palette.tif'), 'rat_test', 'gdal')
+            QgsProject.instance().addMapLayer(raster_layer)
+
+            self.assertTrue(raster_layer.isValid())
+            self.assertFalse(can_create_rat(raster_layer))
+            self.assertFalse(has_rat(raster_layer))
+
+            band = 1
+
+            # Set renderer
+            ramp = QgsRandomColorRamp()
+            renderer = QgsPalettedRasterRenderer(
+                raster_layer.dataProvider(), 1, QgsPalettedRasterRenderer.classDataFromRaster(raster_layer.dataProvider(), band, ramp))
+            raster_layer.setRenderer(renderer)
+            self.assertTrue(can_create_rat(raster_layer))
+
+            rat = create_rat_from_raster(raster_layer, is_sidecar, rat_path)
+            self.assertTrue(rat.isValid())
+
+            self.assertEqual(rat.data['Count'], [78, 176, 52])
+            self.assertEqual(rat.data['Value'], [
+                            2.257495271713565, 7.037407804695962, 270.4551067154352])
+            self.assertEqual(rat.data['A'], [255, 255, 255])
+            self.assertNotEqual(rat.data['R'], [0, 0, 0])
+
+            self.assertTrue(rat.save(band))
+            self.assertTrue(os.path.exists(rat_path))
+
+            QgsProject.instance().removeMapLayers([raster_layer.id()])
+            del (raster_layer)
+
+            self.assertTrue(os.path.exists(rat_path))
+            QgsApplication.processEvents()
+
+            # Reload and check
+            raster_layer = QgsRasterLayer(os.path.join(
+                tmp_dir.path(), 'raster-palette.tif'), 'rat_test', 'gdal')
+            self.assertTrue(raster_layer.isValid())
+            self.assertFalse(can_create_rat(raster_layer))
+            self.assertTrue(has_rat(raster_layer), rat_path)
+
+            os.unlink(rat_path)
+
+        _test(True)
+        _test(False)
 
 
 if __name__ == '__main__':

@@ -23,6 +23,7 @@ from qgis.core import (
     QgsWkbTypes,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransformContext,
+    QgsProject,
 )
 
 try:
@@ -74,6 +75,10 @@ class RATField:
 class RAT:
     """Encapsulate RAT table data"""
 
+    # Ugly hack for GDAL: stores last version of RAT for a source
+    _dirty_xml_rats = {}
+    _dirty_xml_layer_ids = []
+
     def __init__(self, data, is_sidecar, fields, path):
         """Create a RAT
 
@@ -91,6 +96,13 @@ class RAT:
         self.is_sidecar = is_sidecar
         self.fields = fields
         self.path = path
+        self.band = -1  # Unknown, for XML it will be set on save()
+
+    def _restore_xml_rats(self):
+
+        # Retrieve last version of itself
+        rat = RAT._dirty_xml_rats["%s|%s" % (self.band, self.path)]
+        rat.save(self.band)
 
     @property
     def values(self) -> list:
@@ -136,7 +148,8 @@ class RAT:
 
         # collect fields
         for field in list(self.fields.values()):
-            qgis_field = QgsField(field.name, field.qgis_type, comment='RAT usage: %s' % field.usage)
+            qgis_field = QgsField(
+                field.name, field.qgis_type, comment='RAT usage: %s' % field.usage)
             fields.append(qgis_field)
 
         return fields
@@ -148,8 +161,8 @@ class RAT:
         for row_index in range(len(self.values[0])):
             feature = QgsFeature(fields)
             attributes = []
-            for header in self.keys:
-                attributes.append(self.data[header][row_index])
+            for field_name in self.fields.keys():
+                attributes.append(self.data[field_name][row_index])
             feature.setAttributes(attributes)
             features.append(feature)
 
@@ -177,8 +190,9 @@ class RAT:
 
         ds = gdal.OpenEx(raster_source)
         if ds:
-            band = ds.GetRasterBand(band)
-            if band:
+            self.band = band
+            gdal_band = ds.GetRasterBand(band)
+            if gdal_band:
                 rat = gdal.RasterAttributeTable()
                 for field in list(self.fields.values()):
                     rat.CreateColumn(field.name, field.type, field.usage)
@@ -188,8 +202,8 @@ class RAT:
 
                 column_index = 0
 
-                for field_name, values in self.data.items():
-                    field = self.fields[field_name]
+                for field_name, field in self.fields.items():
+                    values = self.data[field_name]
                     func = getattr(rat, 'SetValueAs%s' % type_map[field.type])
 
                     for row_index in range(len(values)):
@@ -197,10 +211,18 @@ class RAT:
 
                     column_index += 1
 
-                assert rat.GetColumnCount() == len(self.keys)
+                assert rat.GetColumnCount() == len(self.fields)
                 assert rat.GetRowCount() == len(self.values[0])
 
-                band.SetDefaultRAT(rat)
+                gdal_band.SetDefaultRAT(rat)
+
+                # Ugly hack because GDAL does not know about the newly created RAT
+                for layer in [l for l in QgsProject.instance().mapLayers().values() if l.source() == raster_source]:
+                    RAT._dirty_xml_rats["%s|%s" %
+                                        (self.band, self.path)] = self
+                    if layer.id() not in RAT._dirty_xml_layer_ids:
+                        RAT._dirty_xml_layer_ids.append(layer.id())
+                        layer.destroyed.connect(self._restore_xml_rats)
 
                 return True
 

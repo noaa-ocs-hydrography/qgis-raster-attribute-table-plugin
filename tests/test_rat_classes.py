@@ -18,12 +18,28 @@ import os
 import shutil
 from unittest import TestCase, main
 from qgis.PyQt.QtCore import QTemporaryDir, QVariant
-from qgis.core import QgsRasterLayer
+from qgis.core import QgsApplication, QgsRasterLayer
 from rat_utils import get_rat
 from rat_classes import RAT, RATField
 
 
 class TestRATClasses(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.qgs = QgsApplication([], False)
+        cls.qgs.initQgis()
+
+    @classmethod
+    def tearDownClass(cls):
+
+        cls.qgs.exitQgis()
+
+    def tearDown(self):
+
+        del(self.raster_layer)
+        del(self.raster_layer_dbf)
 
     def setUp(self):
 
@@ -174,6 +190,17 @@ class TestRATClasses(TestCase):
         self.assertTrue(rat.remove_column('SYSTMGRPNA')[0])
         self.assertEqual(len(rat.keys), 16)
         self.assertEqual(len(rat.keys), len(rat.fields) + 1)
+
+    def test_qgis_features(self):
+
+        rat = get_rat(self.raster_layer_dbf, 1)
+        features = rat.qgis_features()
+        self.assertEqual(len(features), 59)
+
+        rat = get_rat(self.raster_layer, 1)
+        features = rat.qgis_features()
+        self.assertEqual(len(features), 27)
+
 
 
 if __name__ == '__main__':

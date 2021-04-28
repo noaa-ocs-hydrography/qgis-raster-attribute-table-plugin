@@ -33,7 +33,7 @@ class RasterAttributeTableDialogTest(TestCase):
     @classmethod
     def tearDownClass(cls):
 
-        pass
+        cls.qgs.exitQgis()
 
     def test_dialog(self):
 

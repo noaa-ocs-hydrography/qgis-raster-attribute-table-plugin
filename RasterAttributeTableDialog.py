@@ -72,7 +72,8 @@ class RasterAttributeTableDialog(QDialog):
         self.mSaveChangesToolButton.setStyleSheet(
             stylesheet)
 
-        self.loadRat(0)
+        assert self.loadRat(0)
+
         self.setEditable(False)
 
         # Connections
@@ -88,7 +89,6 @@ class RasterAttributeTableDialog(QDialog):
         try:
             self.restoreGeometry(QgsSettings().value(
                 "RasterAttributeTable/geometry", None, QByteArray, QgsSettings.Plugins))
-            rat_log('Dialog geometry restored')
         except:
             pass
 
@@ -112,16 +112,12 @@ class RasterAttributeTableDialog(QDialog):
         """Store changes back into the RAT"""
 
         rat = self.model.rat
-
-        rat.save(self.layer.source())
-
-        # TODO: implement this
-        QMessageBox.warning(None, 'NOT IMPLEMENTED', 'NOT IMPLEMENTED: TODO')
+        band = self.mRasterBandsComboBox.currentIndex() + 1
+        rat.save(band)
 
     def accept(self):
         QgsSettings().setValue("RasterAttributeTable/geometry",
                                self.saveGeometry(), QgsSettings.Plugins)
-        rat_log('Dialog geometry saved')
         super().accept()
 
     def reject(self):
@@ -155,11 +151,13 @@ class RasterAttributeTableDialog(QDialog):
         self.is_dirty = True
         self.mSaveChangesToolButton.setEnabled(self.is_dirty)
 
-    def loadRat(self, band_0_based):
+    def loadRat(self, band_0_based) -> bool:
         """Load RAT for raster band 0-based"""
 
         if type(band_0_based) != int:
-            return
+            rat_log(QCoreApplication.translate(
+                'RAT', 'Invalid band number for the selected raster.'), Qgis.Critical)
+            return False
 
         self.mClassifyComboBox.clear()
 
@@ -176,6 +174,8 @@ class RasterAttributeTableDialog(QDialog):
             criteria = self.layer.customProperty(RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
             if criteria in headers:
                 self.mClassifyComboBox.setCurrentIndex(self.mClassifyComboBox.findText(criteria))
+            return True
         else:
             rat_log(QCoreApplication.translate(
                 'RAT', 'There is no Raster Attribute Table for the selected raster.'), Qgis.Critical)
+            return False

@@ -284,11 +284,12 @@ def has_rat(raster_layer) -> bool:
     if not raster_layer.isValid():
         return False
 
-    for band in range(raster_layer.bandCount() + 1):
+    for band in range(1, raster_layer.bandCount() + 1):
         if get_rat(raster_layer, band).isValid():
             return True
 
     return False
+
 
 def can_create_rat(raster_layer) -> bool:
     """Returns TRUE if a RAT can be created from the raster_layer
@@ -301,3 +302,72 @@ def can_create_rat(raster_layer) -> bool:
 
     # TODO: handle singleband pseudocolor
     return raster_layer.isValid() and isinstance(raster_layer.renderer(), (QgsPalettedRasterRenderer, ))
+
+
+def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlockFeedback()) -> RAT:
+    """Creates a new RAT object from a raster layer, an invalid RAT is returned in case of errors.
+
+    :param raster_layer: raster layer
+    :type raster_layer: QgsRasterLayer
+    :param is_sidecar: raster layer
+    :type is_sidecar: bool
+    :return: new RAT
+    :rtype: RAT
+    """
+
+    if not can_create_rat(raster_layer):
+        return RAT({}, {}, '')
+
+    renderer = raster_layer.renderer()
+    band = renderer.band()
+    classes = renderer.classes()
+
+    if len(classes) == 0:
+        return RAT({}, {}, '')
+
+    is_real = isinstance(classes[0].value, float)
+
+    fields = {
+        'Value': RATField('Value', gdal.GFU_MinMax, gdal.GFT_Real if is_real else gdal.GFT_Integer),
+    }
+
+    data = {
+        RAT_COLOR_HEADER_NAME: [],
+        'Value': []
+    }
+
+    histogram = raster_layer.dataProvider().histogram(band, feedback=feedback)
+    histogram_values = []
+    if histogram.valid:
+        fields['Count'] = RATField(
+            'Count', gdal.GFU_PixelCount, gdal.GFT_Integer)
+        data['Count'] = []
+        for val in histogram.histogramVector:
+            if val != 0:
+                histogram_values.append(val)
+
+    fields['Class'] = RATField('Class', gdal.GFU_Name, gdal.GFT_String)
+    data['Class'] = []
+
+    fields['R'] = RATField('R', gdal.GFU_Red, gdal.GFT_Integer)
+    fields['G'] = RATField('G', gdal.GFU_Green, gdal.GFT_Integer)
+    fields['B'] = RATField('B', gdal.GFU_Blue, gdal.GFT_Integer)
+    fields['A'] = RATField('A', gdal.GFU_Alpha, gdal.GFT_Integer)
+    data['R'] = []
+    data['G'] = []
+    data['B'] = []
+    data['A'] = []
+
+    i = 0
+    for klass in renderer.classes():
+        data[RAT_COLOR_HEADER_NAME].append(klass.color)
+        data['Value'].append(klass.value)
+        data['Count'].append(histogram_values[i])
+        data['Class'].append(klass.label)
+        data['R'].append(klass.color.red())
+        data['G'].append(klass.color.green())
+        data['B'].append(klass.color.blue())
+        data['A'].append(klass.color.alpha())
+        i += 1
+
+    return RAT(data, is_sidecar, fields, path)
