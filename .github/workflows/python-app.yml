@@ -8,7 +8,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
         pip3 install flake8 pytest-xdist
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F7E06F06199EF2F2
-        sudo sh -c 'echo "deb [arch=amd64] https://qgis.org/ubuntu-ltr bionic main" >> /etc/apt/sources.list'
+        sudo sh -c 'echo "deb [arch=amd64] https://qgis.org/ubuntu-ltr focal main" >> /etc/apt/sources.list'
         sudo apt update
         sudo apt install qgis xvfb
     - name: Lint with flake8
