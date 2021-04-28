@@ -21,6 +21,9 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install flake8 pytest-xdist
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+        apt-key adv --keyserver keyserver.ubuntu.com --recv-key F7E06F06199EF2F2
+        echo "deb [arch=amd64] https://qgis.org/ubuntu-ltr bionic main" >> /etc/apt/sources.list
+        apt update
         sudo apt install qgis xvfb
     - name: Lint with flake8
       run: |
