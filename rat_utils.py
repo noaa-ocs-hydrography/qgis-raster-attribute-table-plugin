@@ -272,6 +272,43 @@ def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=
         node.setExpanded(True)
 
 
+def homogenize_colors(iface, raster_layer) -> bool:
+    """Assign the color of the first class to all other
+    classes having the same label.
+
+    :param iface: QGIS interface
+    :type iface: QgisInterface
+    :param raster_layer: raster layer
+    :type raster_layer: QgsRasterLayer
+    :return: TRUE if the renderer has been reset
+    :rtype: bool
+    """
+
+    assert iface is not None
+    assert isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer)
+
+    if len(raster_layer.renderer().classes()) == 0:
+        return
+
+    unique_classes = {}
+    require_changes = False
+    classes = raster_layer.renderer().classes()
+    for klass in classes:
+        if klass.label not in unique_classes:
+            unique_classes[klass.label] = klass.color
+        else:
+            klass.color = unique_classes[klass.label]
+            require_changes = True
+
+    if require_changes:
+        renderer = QgsPalettedRasterRenderer(
+            raster_layer.dataProvider(), raster_layer.renderer().band(), classes)
+        raster_layer.setRenderer(renderer)
+        raster_layer.triggerRepaint()
+
+    return require_changes
+
+
 def has_rat(raster_layer) -> bool:
     """Returns TRUE if the raster layer has a RAT table
 
