@@ -170,8 +170,6 @@ class RatUtilsTest(TestCase):
 
         tmp_dir = QTemporaryDir()
         shutil.copy(os.path.join(os.path.dirname(
-            __file__), 'data', 'ExistingVegetationTypes_sample.img.aux.xml'), tmp_dir.path())
-        shutil.copy(os.path.join(os.path.dirname(
             __file__), 'data', 'ExistingVegetationTypes_sample.img'), tmp_dir.path())
 
         dest_raster_layer = QgsRasterLayer(os.path.join(tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')

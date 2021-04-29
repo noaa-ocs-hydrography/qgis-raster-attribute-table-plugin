@@ -14,7 +14,7 @@ __copyright__ = 'Copyright 2021, ItOpen'
 
 import os
 from osgeo import gdal
-from qgis.PyQt.QtCore import QFileInfo, QVariant
+from qgis.PyQt.QtCore import QFileInfo, QVariant, QCoreApplication
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     QgsVectorLayer,
@@ -195,9 +195,10 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     classes = QgsPalettedRasterRenderer.classDataFromRaster(
         raster_layer.dataProvider(), band, ramp, feedback)
     has_color = rat.has_color
-    # Values is the first item
-    # FIXME: use field role!
-    values = rat.values[0]
+    # A valid RAT must have a value field
+    value_column_name = [field.name for field in rat.fields.values(
+    ) if field.usage == gdal.GFU_MinMax][0]
+    values = rat.data[value_column_name]
     labels = rat.data[criteria]
     label_colors = {}
     is_integer = isinstance(values[0], int)
@@ -408,3 +409,23 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
         i += 1
 
     return RAT(data, is_sidecar, fields, path)
+
+
+def data_type_name(data_type) -> str:
+    """Returns the translated name of a gdal.GFT_* data type
+
+    :param data_type: gdal RAT data type
+    :type data_type: gdal.GFT_*
+    :return: the human readable name
+    :rtype: str
+    """
+
+    if data_type == gdal.GFT_Integer:
+        data_type_name = QCoreApplication.translate('RAT', 'Integer')
+    elif data_type == gdal.GFT_Real:
+        data_type_name = QCoreApplication.translate(
+            'RAT', 'Floating point')
+    else:
+        data_type_name = QCoreApplication.translate('RAT', 'String')
+
+    return data_type_name

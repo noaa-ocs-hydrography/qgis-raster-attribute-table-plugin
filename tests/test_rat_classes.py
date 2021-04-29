@@ -18,6 +18,7 @@ import os
 import shutil
 from unittest import TestCase, main
 from qgis.PyQt.QtCore import QTemporaryDir, QVariant
+from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsApplication, QgsRasterLayer
 from rat_utils import get_rat
 from rat_classes import RAT, RATField
@@ -174,6 +175,9 @@ class TestRATClasses(TestCase):
         self.assertEqual(len(rat.data['f3']), len(rat.data['VALUE']))
         self.assertEqual(rat.data['f3'][0], '')
 
+        field = RATField('R', gdal.GFU_Red, gdal.GFT_Integer)
+        self.assertFalse(rat.insert_column(len(rat.keys) - 1, field)[0])
+
     def test_remove_column_dbf(self):
 
         rat = get_rat(self.raster_layer_dbf, 1)
@@ -200,6 +204,20 @@ class TestRATClasses(TestCase):
         rat = get_rat(self.raster_layer, 1)
         features = rat.qgis_features()
         self.assertEqual(len(features), 27)
+
+    def test_get_set_color(self):
+
+        rat = get_rat(self.raster_layer_dbf, 1)
+        color = rat.get_color(0)
+        self.assertTrue(color.isValid())
+
+        # Invalid
+        self.assertFalse(rat.get_color(-1).isValid())
+        self.assertFalse(rat.get_color(100).isValid())
+
+        # Setter
+        self.assertTrue(rat.set_color(1, QColor(10, 20, 30, 120)))
+        self.assertEqual(rat.get_color(1), QColor(10, 20, 30, 120))
 
 
 

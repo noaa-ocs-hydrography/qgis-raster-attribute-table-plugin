@@ -1,14 +1,14 @@
 [general]
 name:RasterAttributeTable
-description:Display a RAT.
+description:Display and manage a RAT.
 
 version:1.0
-qgisMinimumVersion:3.0
+qgisMinimumVersion:3.16
 experimental:False
-homepage:http://www.itopen.it/
-repository:https://github.com/elpaso/
-tracker:https://github.com/elpaso/
-about:Display a RAT.
+homepage:https://github.com/elpaso/qgis-raster-attribute-table-plugin
+repository:https://github.com/elpaso/qgis-raster-attribute-table-plugin
+tracker:https://github.com/elpaso/qgis-raster-attribute-table-plugin/issues
+about:Display and manage a RAT.
 
 changelog:
     Version 1.0:

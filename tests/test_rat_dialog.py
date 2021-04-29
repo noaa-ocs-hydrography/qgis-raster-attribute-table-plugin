@@ -18,8 +18,8 @@ from unittest import TestCase, main
 
 from qgis.core import QgsApplication, QgsRasterLayer
 from qgis.PyQt.QtCore import Qt
-from RasterAttributeTableDialog import RasterAttributeTableDialog
 
+from dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from rat_constants import RAT_COLOR_HEADER_NAME
 
 class RasterAttributeTableDialogTest(TestCase):

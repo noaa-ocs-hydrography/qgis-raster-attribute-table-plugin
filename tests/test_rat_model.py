@@ -17,7 +17,8 @@ import os
 from osgeo import gdal
 import shutil
 from unittest import TestCase, main
-from qgis.PyQt.QtCore import QTemporaryDir
+from qgis.PyQt.QtCore import QTemporaryDir, Qt
+from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsRasterLayer
 from rat_utils import get_rat
 from rat_model import RATModel
@@ -36,6 +37,10 @@ class TestRATModel(TestCase):
         self.raster_layer = QgsRasterLayer(os.path.join(
             self.tmp_path, 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
         self.assertTrue(self.raster_layer.isValid())
+
+        self.raster_layer_color = QgsRasterLayer(os.path.join(
+            self.tmp_path, 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        self.assertTrue(self.raster_layer_color.isValid())
 
     def test_insert_column(self):
 
@@ -68,17 +73,44 @@ class TestRATModel(TestCase):
         self.assertEqual(model.columnCount(
             model.index(0, 0)), column_count - 1)
 
-    def test_add_color(self):
+    def test_edit_color(self):
 
-        pass
+        rat = get_rat(self.raster_layer_color, 1)
+        model = RATModel(rat)
+
+        index = model.index(0, 0, model.index(0, 0))
+        value = QColor(Qt.magenta)
+        model.setData(index, value)
+
+        self.assertEqual(model.data(index, Qt.BackgroundColorRole), value)
 
     def test_remove_color(self):
 
-        pass
+        rat = get_rat(self.raster_layer_color, 1)
+        model = RATModel(rat)
+        self.assertTrue({'R', 'G', 'B'}.issubset(rat.keys))
+        self.assertTrue({'R', 'G', 'B'}.issubset(model.headers))
+        self.assertTrue(model.has_color)
+        column_count = model.columnCount(model.index(0, 0, model.index(0, 0)))
+        self.assertEqual(column_count, 17)
+
+        # Remove colors
+        self.assertTrue(model.remove_color())
+        self.assertEqual(model.columnCount(model.index(0, 0, model.index(0, 0))), column_count - 4)
+
+        self.assertFalse(rat.has_color)
+        self.assertFalse(model.has_color)
+        self.assertFalse({'R', 'G', 'B'}.issubset(rat.keys))
+        self.assertFalse({'R', 'G', 'B'}.issubset(model.headers))
+
+        # Add color back (with alpha)
+        self.assertTrue(model.insert_color(2))
+        self.assertEqual(model.columnCount(model.index(0, 0, model.index(0, 0))), column_count + 1)
+        self.assertTrue({'R', 'G', 'B'}.issubset(rat.keys))
+        self.assertTrue({'R', 'G', 'B'}.issubset(model.headers))
+        self.assertTrue(rat.has_color)
+        self.assertTrue(model.has_color)
 
 
-
-
-
-
-
+if __name__ == '__main__':
+    main()

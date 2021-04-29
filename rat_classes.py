@@ -15,6 +15,7 @@ __copyright__ = 'Copyright 2021, ItOpen'
 from osgeo import gdal
 import os
 from qgis.PyQt.QtCore import QVariant, QCoreApplication
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     QgsFields,
     QgsField,
@@ -66,6 +67,29 @@ class RATField:
             return QVariant.String
         else:
             raise Exception('Unhandled RAT field type:  %s' % self.type)
+
+    @property
+    def is_color(self) -> bool:
+        """Returns TRUE if the usage is a color role
+
+        :return: TRUE if the usage is a color role
+        :rtype: bool
+        """
+
+        return self.usage in (
+            gdal.GFU_Red,
+            gdal.GFU_RedMax,
+            gdal.GFU_RedMin,
+            gdal.GFU_Green,
+            gdal.GFU_GreenMax,
+            gdal.GFU_GreenMin,
+            gdal.GFU_Blue,
+            gdal.GFU_BlueMax,
+            gdal.GFU_BlueMin,
+            gdal.GFU_Alpha,
+            gdal.GFU_AlphaMax,
+            gdal.GFU_AlphaMin,
+        )
 
     def __repr__(self):
 
@@ -125,7 +149,7 @@ class RAT:
 
     @property
     def field_usages(self) -> set:
-        """Returns all field usages in the rat
+        """Returns all field usages in the RAT
 
         :return: field usages
         :rtype: set
@@ -139,8 +163,13 @@ class RAT:
 
     @property
     def has_color(self) -> bool:
+        """Returns TRUE if the RAT contains RGB fields, Alpha is optional.
 
-        return RAT_COLOR_HEADER_NAME in self.keys
+        :return: checks if the RAT has color data
+        :rtype: bool
+        """
+
+        return {gdal.GFU_Green, gdal.GFU_Red, gdal.GFU_Blue}.issubset(self.field_usages)
 
     def qgis_fields(self) -> QgsFields:
 
@@ -239,41 +268,17 @@ class RAT:
         else:
             return self.save_as_xml(raster_source, band)
 
-    def insert_column(self, index, field) -> (bool, str):
-        """Inserts a field into the RAT a position index
+    def __insert_column(self, column, field) -> (bool, str):
+        """Private insertion method: no validation"""
 
-        :param index: insertion point
-        :type index: int
-        :param field: RAT field to insert
-        :type field: RATField
-        :return:  (TRUE, None) on success, (FALSE, error_message) on failure
-        :rtype: tuple
-        """
-
-        if index < 0 or index >= len(self.keys):
-            return False, QCoreApplication.translate('RAT', 'Insertion point is out of range.')
-
-        if field.name in self.fields.keys():
-            return False, QCoreApplication.translate('RAT', 'Column %s already exists.' % field.name)
-
-        if field.usage in RAT_UNIQUE_FIELDS and field.usage in self.field_usages:
-            return False, QCoreApplication.translate('RAT', 'Column %s usage already exists and must be unique.' % field.name)
-
-        if index < len(self.keys) - 1:
-            next_key = self.keys[index]
-            next_field = self.fields[next_key]
-            if next_field.usage in (gdal.GFU_MinMax, gdal.GFU_PixelCount):
-                return False, QCoreApplication.translate('RAT', 'Column %s cannot be inserted before a "Value" or "Count" column.' % field.name)
-
-        # Validation ok: insert
         column_data = ['' if field.qgis_type ==
-                       QVariant.String else 0] * len(self.values[0])
+                       QVariant.String else (255 if field.usage == gdal.GFU_AlphaMax else 0)] * len(self.values[0])
         self.data[field.name] = column_data
 
         # Fields: keep the ordering
         new_fields = {}
         i = 0
-        field_index = index - 1 if self.has_color else index
+        field_index = column - 1 if self.has_color else column
         for field_name, field_data in self.fields.items():
             if field_index == i:
                 new_fields[field.name] = field
@@ -285,6 +290,89 @@ class RAT:
 
         return True, None
 
+    def insert_column(self, column, field) -> (bool, str):
+        """Inserts a field into the RAT at position column
+
+        :param column: insertion point
+        :type column: int
+        :param field: RAT field to insert
+        :type field: RATField
+        :return:  (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
+
+        if column < 0 or column >= len(self.keys):
+            return False, QCoreApplication.translate('RAT', 'Insertion point is out of range.')
+
+        if field.name in self.fields.keys():
+            return False, QCoreApplication.translate('RAT', 'Column %s already exists.' % field.name)
+
+        if field.is_color:
+            return False, QCoreApplication.translate('RAT', 'Cannot add a single color data column: use insert_colors() instead.')
+
+        if field.usage in RAT_UNIQUE_FIELDS and field.usage in self.field_usages:
+            return False, QCoreApplication.translate('RAT', 'Column %s usage already exists and must be unique.' % field.name)
+
+        if column < len(self.keys) - 1:
+            next_key = self.keys[column]
+            next_field = self.fields[next_key]
+            if next_field.usage in (gdal.GFU_MinMax, gdal.GFU_PixelCount):
+                return False, QCoreApplication.translate('RAT', 'Column %s cannot be inserted before a "Value" or "Count" column.' % field.name)
+
+        # Validation ok: insert
+        return self.__insert_column(column, field)
+
+    def get_color(self, row_index) -> QColor:
+        """Returns the color for a row index
+
+        :param row_index: row index
+        :type row_index: int
+        :return: row color
+        :rtype: QColor
+        """
+
+        if not self.has_color or row_index < 0 or row_index > len(self.values[0]) - 1:
+            return QColor()
+        else:
+            return self.data[RAT_COLOR_HEADER_NAME][row_index]
+
+    def set_color(self, row_index, color) -> bool:
+        """Set the color for a row
+
+        :param row_index: row index
+        :type row_index: int
+        :param color: color
+        :type color: QColor
+        :return: TRUE on success
+        :rtype: bool
+        """
+
+        if not self.has_color:
+            return False
+
+        if row_index < 0 or row_index > len(self.values[0]) - 1:
+            return False
+
+        red = color.red()
+        green = color.green()
+        blue = color.alpha()
+        alpha = color.alpha()
+
+        self.data[RAT_COLOR_HEADER_NAME][row_index] = color
+
+        for field in self.fields.values():
+            if field.is_color:
+                if field.usage == gdal.GFU_Red:
+                    self.data[field.name][row_index] = red
+                elif field.usage == gdal.GFU_Green:
+                    self.data[field.name][row_index] = green
+                elif field.usage == gdal.GFU_Blue:
+                    self.data[field.name][row_index] = blue
+                elif field.usage == gdal.GFU_AlphaMax:
+                    self.data[field.name][row_index] = alpha
+
+        return True
+
     def remove_column(self, column_name) -> (bool, str):
         """Removes the column named column_name
 
@@ -294,14 +382,61 @@ class RAT:
         :rtype: tuple
         """
 
-        if column_name not in self.fields.keys() or column_name not in self.keys:
+        if column_name not in self.keys:
             return False, QCoreApplication.translate('RAT', 'Column %s does not exist.' % column_name)
+
+        # Delete virtual color column
+        if column_name == RAT_COLOR_HEADER_NAME:
+            del (self.data[column_name])
+            return True, None
 
         field_usage = self.fields[column_name].usage
         if field_usage in (gdal.GFU_MinMax, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_PixelCount):
             return False, QCoreApplication.translate('RAT', 'Removal of a "Value" or "Count" column is not allowed.')
 
+        if self.fields[column_name].is_color:
+            return False, QCoreApplication.translate('RAT', 'Direct removal of color data is not allowed.')
+
         del(self.fields[column_name])
-        del (self.data[column_name])
+        del(self.data[column_name])
 
         return True, None
+
+    def insert_color_fields(self, column) -> (bool, str):
+        """Inserts all RGBA color fields at position column
+
+        :param column: insertion point
+        :type column: int
+        :return: (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
+
+        fields = [
+            RATField('A', gdal.GFU_Alpha, gdal.GFT_Integer),
+            RATField('B', gdal.GFU_Blue, gdal.GFT_Integer),
+            RATField('G', gdal.GFU_Green, gdal.GFT_Integer),
+            RATField('R', gdal.GFU_Red, gdal.GFT_Integer),
+        ]
+
+        for field in fields:
+            result, error_message = self.__insert_column(column, field)
+            if not result:
+                return result, error_message
+
+        return True, None
+
+    def remove_color_fields(self) -> bool:
+        """Remove all RGBA color fields (if any)
+
+        :return: TRUE on success
+        :rtype: bool
+        """
+
+        removed = False
+
+        for field_name in [field.name for field in self.fields.values() if field.is_color]:
+            removed = True
+            del(self.fields[field_name])
+            del(self.data[field_name])
+
+        return removed
