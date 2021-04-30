@@ -17,11 +17,12 @@ from osgeo import gdal
 import os
 import shutil
 from unittest import TestCase, main
-from qgis.PyQt.QtCore import QTemporaryDir, QVariant
+from qgis.PyQt.QtCore import QTemporaryDir, QVariant, Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsApplication, QgsRasterLayer
-from rat_utils import get_rat
+from rat_utils import get_rat, rat_classify
 from rat_classes import RAT, RATField
+from rat_constants import RAT_COLOR_HEADER_NAME
 
 
 class TestRATClasses(TestCase):
@@ -218,6 +219,33 @@ class TestRATClasses(TestCase):
         # Setter
         self.assertTrue(rat.set_color(1, QColor(10, 20, 30, 120)))
         self.assertEqual(rat.get_color(1), QColor(10, 20, 30, 120))
+
+    def test_update_color_from_raster(self):
+
+        rat = get_rat(self.raster_layer_dbf, 1)
+        self.assertTrue(rat.has_color)
+        rat_classify(self.raster_layer_dbf, 1, rat, 'EVT_NAME')
+
+        color_map = {klass.value: klass.color for klass in self.raster_layer_dbf.renderer().classes()}
+
+        # Remove color
+        self.assertTrue(rat.remove_color_fields())
+        self.assertFalse(rat.has_color)
+
+        # Add color
+        result, error_message = rat.insert_color_fields(len(rat.keys)-1)
+        self.assertTrue(result, error_message)
+        self.assertTrue(rat.has_color)
+
+        for color in rat.data[RAT_COLOR_HEADER_NAME]:
+            self.assertEqual(color, QColor(Qt.black))
+
+        # Update color from raster
+        self.assertTrue(rat.update_colors_from_raster(self.raster_layer_dbf))
+
+        value_column = rat.value_column
+        for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
+            self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index], color_map[rat.data[value_column][row_index]])
 
 
 

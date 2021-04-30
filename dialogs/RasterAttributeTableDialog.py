@@ -28,12 +28,14 @@ from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QStyledI
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
 try:
-    from ..rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
+    from ..rat_utils import get_rat, rat_classify, deduplicate_legend_entries
     from ..rat_model import RATModel
+    from ..rat_log import rat_log
     from ..rat_classes import RATField
     from ..rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, RAT_COLOR_HEADER_NAME
 except ValueError:
-    from rat_utils import get_rat, rat_classify, rat_log, deduplicate_legend_entries
+    from rat_utils import get_rat, rat_classify, deduplicate_legend_entries
+    from rat_log import rat_log
     from rat_model import RATModel
     from rat_classes import RATField
     from rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, RAT_COLOR_HEADER_NAME
@@ -58,7 +60,7 @@ class ColorDelegate(QStyledItemDelegate):
 
 class RasterAttributeTableDialog(QDialog):
 
-    def __init__(self, layer, iface=None):
+    def __init__(self, raster_layer, iface=None):
 
         QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -66,13 +68,13 @@ class RasterAttributeTableDialog(QDialog):
             __file__), 'Ui_RasterAttributeTableDialog.ui')
         uic.loadUi(ui_path, self)
 
-        self.layer = layer
+        self.raster_layer = raster_layer
         self.iface = iface
         self.editable = False
         self.is_dirty = False
 
         self.mRasterBandsComboBox.addItems(
-            [layer.bandName(bn) for bn in range(1, layer.bandCount() + 1)])
+            [raster_layer.bandName(bn) for bn in range(1, raster_layer.bandCount() + 1)])
 
         self.mToggleEditingToolButton.setIcon(
             QgsApplication.getThemeIcon("/mActionToggleEditing.svg"))
@@ -141,6 +143,8 @@ class RasterAttributeTableDialog(QDialog):
                                             'RAT', "Error Adding Colors"),
                                         QCoreApplication.translate('RAT', "An error occourred while adding colors to the RAT!"))
                 else:
+                    # Try to update colors from current raster
+                    self.model.rat.update_colors_from_raster(self.raster_layer)
                     self.is_dirty = True
 
             else:
@@ -187,7 +191,7 @@ class RasterAttributeTableDialog(QDialog):
                 if QMessageBox.question(None,
                                         QCoreApplication.translate(
                                             'RAT', "Remove All Colors"),
-                                        QCoreApplication.translate('RAT', "All color information (Red, Green, Blue and Alpha) will be removed from the RAT. Do you want continue?")) == QMessageBox.Yes:
+                                        QCoreApplication.translate('RAT', "<p>All color information (Red, Green, Blue and Alpha) will be removed from the RAT.</p><p>Do you want continue?</p>")) == QMessageBox.Yes:
                     # Remove all colors
                     if not self.model.remove_color():
                         QMessageBox.warning(None,
@@ -251,7 +255,7 @@ class RasterAttributeTableDialog(QDialog):
         if not self.is_dirty or QMessageBox.question(None,
                                                      QCoreApplication.translate(
                                                          'RAT', "Save RAT changes"),
-                                                     QCoreApplication.translate('RAT', "RAT has been modified, if you do not save the changes they will be lost. Do you really want to leave this dialog?")) == QMessageBox.Yes:
+                                                     QCoreApplication.translate('RAT', "<p>RAT has been modified, if you do not save the changes now or export the RAT they will be lost.</p><p>Exit without saving?<p>")) == QMessageBox.Yes:
             self.accept()
 
     def classify(self):
@@ -263,16 +267,15 @@ class RasterAttributeTableDialog(QDialog):
                                 QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
             band = self.mRasterBandsComboBox.currentIndex() + 1
             criteria = self.mClassifyComboBox.currentText()
-            rat = get_rat(self.layer, band)
             # TODO: ramp & feedback
             unique_class_row_indexes = rat_classify(
-                self.layer, band, rat, criteria)
+                self.raster_layer, band, self.rat, criteria)
             unique_class_row_indexes.insert(0, 0)
             if self.iface is not None:
                 deduplicate_legend_entries(
-                    self.iface, self.layer, criteria, unique_class_row_indexes, expand=True)
+                    self.iface, self.raster_layer, criteria, unique_class_row_indexes, expand=True)
             # Adopt the layer
-            self.layer.setCustomProperty(
+            self.raster_layer.setCustomProperty(
                 RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, criteria)
 
     def dirty(self, *args):
@@ -290,21 +293,21 @@ class RasterAttributeTableDialog(QDialog):
 
         self.mClassifyComboBox.clear()
 
-        rat = get_rat(self.layer, band_0_based + 1)
+        self.rat = get_rat(self.raster_layer, band_0_based + 1)
 
-        if rat.keys:
-            self.model = RATModel(rat)
+        if self.rat.keys:
+            self.model = RATModel(self.rat)
             self.model.dataChanged.connect(self.dirty)
             self.proxyModel = QSortFilterProxyModel(self)
             self.proxyModel.setSourceModel(self.model)
             self.mRATView.setModel(self.proxyModel)
             self.mRATView.selectionModel().selectionChanged.connect(self.updateButtons)
-            if rat.has_color:
+            if self.rat.has_color:
                 colorDelegate = ColorDelegate(self.mRATView)
                 self.mRATView.setItemDelegateForColumn(0, colorDelegate)
-            headers = rat.keys
-            self.mClassifyComboBox.addItems(headers[2:])
-            criteria = self.layer.customProperty(
+            headers = self.rat.keys
+            self.mClassifyComboBox.addItems([field.name for field in self.rat.fields.values() if field.usage in {gdal.GFU_Name, gdal.GFU_Generic}])
+            criteria = self.raster_layer.customProperty(
                 RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
             if criteria in headers:
                 self.mClassifyComboBox.setCurrentIndex(

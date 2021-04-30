@@ -29,7 +29,8 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton
 
 from .dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from .dialogs.CreateRasterAttributeTableDialog import CreateRasterAttributeTableDialog
-from .rat_utils import rat_log, has_rat, can_create_rat, deduplicate_legend_entries, homogenize_colors
+from .rat_utils import has_rat, can_create_rat, deduplicate_legend_entries, homogenize_colors
+from .rat_log import rat_log
 from .rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 
 

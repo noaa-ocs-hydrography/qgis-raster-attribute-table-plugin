@@ -231,6 +231,11 @@ class RatUtilsTest(TestCase):
             __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.tiff'), 'rat_test', 'gdal')
         self.assertFalse(has_rat(raster_layer))
 
+        raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16.tif'), 'rat_test', 'gdal')
+        self.assertTrue(has_rat(raster_layer))
+
+
     def test_can_create_rat(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(

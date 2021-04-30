@@ -20,11 +20,13 @@ from qgis.PyQt.QtGui import QBrush, QColor
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
-    from .rat_utils import rat_log, data_type_name
+    from .rat_utils import data_type_name
+    from .rat_log import rat_log
     from .rat_classes import RATField
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME
-    from rat_utils import rat_log, data_type_name
+    from rat_log import rat_log
+    from rat_utils import data_type_name
     from rat_classes import RATField
 
 
@@ -300,11 +302,8 @@ class RATModel(QAbstractTableModel):
         color_fields = [field.name for field in self.rat.fields.values() if field.is_color]
         assert len(color_fields) > 0
 
-        # Remove virtual color field
-        self.beginResetModel()
-        result, error_message = self.rat.remove_column(RAT_COLOR_HEADER_NAME)
-        assert result, error_message
         # Remove actual color fields
+        self.beginResetModel()
         result = self.rat.remove_color_fields()
         assert result
         self.endResetModel()

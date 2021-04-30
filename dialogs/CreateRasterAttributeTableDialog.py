@@ -21,10 +21,12 @@ from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 from qgis.core import Qgis, QgsApplication, QgsSettings, QgsRasterLayer, QgsMapLayer
 
 try:
-    from ..rat_utils import rat_log, create_rat_from_raster
+    from ..rat_utils import create_rat_from_raster
     from ..rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
+    from ..rat_log import rat_log
 except ImportError:
-    from rat_utils import rat_log, create_rat_from_raster
+    from rat_utils import create_rat_from_raster
+    from rat_log import rat_log
     from rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 
 

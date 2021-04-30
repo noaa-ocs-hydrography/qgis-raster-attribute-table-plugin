@@ -22,9 +22,11 @@ from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QDialogB
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
 try:
-    from ..rat_utils import rat_log, data_type_name
+    from ..rat_utils import data_type_name
+    from ..rat_log import rat_log
 except ValueError:
-    from rat_utils import rat_log, data_type_name
+    from rat_utils import data_type_name
+    from rat_log import rat_log
 
 
 class AddColumnDialog(QDialog):
@@ -47,6 +49,7 @@ class AddColumnDialog(QDialog):
 
         self.mName.textChanged.connect(self.updateDialog)
         self.mStandardColumn.toggled.connect(self.updateDialog)
+        self.mColor.toggled.connect(self.updateDialog)
 
         self.mDataType.addItem(data_type_name(gdal.GFT_String), gdal.GFT_String)
         self.mDataType.addItem(data_type_name(gdal.GFT_Integer), gdal.GFT_Integer)
@@ -61,7 +64,7 @@ class AddColumnDialog(QDialog):
         self.mDefinition.setEnabled(self.mStandardColumn.isChecked())
         is_valid = True
         self.mError.hide()
-        if self.mStandardColumn:
+        if self.mStandardColumn.isChecked():
             name = self.mName.text().strip().upper()
             if name == '' or name in self.upper_headers:
                 self.mError.setText(QCoreApplication.translate('RAT', 'Name must be unique and it cannot be empty'))

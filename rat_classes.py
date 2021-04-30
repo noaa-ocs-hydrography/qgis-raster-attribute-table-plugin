@@ -14,9 +14,10 @@ __copyright__ = 'Copyright 2021, ItOpen'
 
 from osgeo import gdal
 import os
-from qgis.PyQt.QtCore import QVariant, QCoreApplication
+from qgis.PyQt.QtCore import QVariant, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (
+    Qgis,
     QgsFields,
     QgsField,
     QgsFeature,
@@ -25,12 +26,15 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransformContext,
     QgsProject,
+    QgsPalettedRasterRenderer,
 )
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME, RAT_UNIQUE_FIELDS
+    from .rat_log import rat_log
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME, RAT_UNIQUE_FIELDS
+    from rat_log import rat_log
 
 
 class RATField:
@@ -143,9 +147,17 @@ class RAT:
 
         return self.__data
 
+    @property
+    def value_column(self) -> str:
+
+        try:
+            return [field.name for field in self.fields.values() if field.usage == gdal.GFU_MinMax][0]
+        except:
+            return None
+
     def isValid(self) -> bool:
 
-        return len(self.keys) > 0
+        return len(self.keys) > 0 and self.values is not None
 
     @property
     def field_usages(self) -> set:
@@ -272,7 +284,7 @@ class RAT:
         """Private insertion method: no validation"""
 
         column_data = ['' if field.qgis_type ==
-                       QVariant.String else (255 if field.usage == gdal.GFU_AlphaMax else 0)] * len(self.values[0])
+                       QVariant.String else (255 if field.usage == gdal.GFU_Alpha else 0)] * len(self.values[0])
         self.data[field.name] = column_data
 
         # Fields: keep the ordering
@@ -402,6 +414,51 @@ class RAT:
 
         return True, None
 
+    def update_colors_from_raster(self, raster_layer) -> bool:
+        """Updates colors from raster
+
+        :param raster_layer: raster layer
+        :type raster_layer: QgsRasterLayer
+        :return: TRUE on success if all colors could be set
+        :rtype: bool
+        """
+
+        if self.has_color and raster_layer.isValid() and isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
+            result = False
+            red_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Red][0]
+            green_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Green][0]
+            blue_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Blue][0]
+            try:
+                alpha_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Alpha][0]
+            except:
+                alpha_column = None
+
+            color_map = {}
+            for klass in raster_layer.renderer().classes():
+                color_map[klass.value] = klass.color
+
+            value_column = self.value_column
+
+            for row_index in range(len(self.data[value_column])):
+                value = self.data[value_column][row_index]
+                try:
+                    color = color_map[value]
+                    self.__data[RAT_COLOR_HEADER_NAME][row_index] = color
+                    self.__data[red_column][row_index] = color.red()
+                    self.__data[green_column][row_index] = color.green()
+                    self.__data[blue_column][row_index] = color.blue()
+                    if alpha_column is not None:
+                        self.__data[alpha_column][row_index] = color.alpha()
+                    result = True
+                except KeyError as ex:
+                    rat_log(f'Error setting color for value {value}: {ex}', Qgis.Warning)
+
+            return result
+
+        else:
+            return False
+
+
     def insert_color_fields(self, column) -> (bool, str):
         """Inserts all RGBA color fields at position column
 
@@ -423,6 +480,12 @@ class RAT:
             if not result:
                 return result, error_message
 
+        # Add color virtual field
+        data = {RAT_COLOR_HEADER_NAME: [QColor(Qt.black)]*len(self.values[0])}
+
+        data.update(self.data)
+        self.__data = data
+
         return True, None
 
     def remove_color_fields(self) -> bool:
@@ -432,11 +495,16 @@ class RAT:
         :rtype: bool
         """
 
+        if not self.has_color:
+            return False
+
         removed = False
 
         for field_name in [field.name for field in self.fields.values() if field.is_color]:
             removed = True
             del(self.fields[field_name])
-            del(self.data[field_name])
+            del(self.__data[field_name])
+
+        del(self.__data[RAT_COLOR_HEADER_NAME])
 
         return removed

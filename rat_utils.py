@@ -30,9 +30,11 @@ from qgis.core import (
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
     from .rat_classes import RATField, RAT
+    from .rat_log import rat_log
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME
     from rat_classes import RATField, RAT
+    from rat_log import rat_log
 
 
 def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
@@ -169,7 +171,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
     return RAT(values, is_sidecar, fields, path)
 
 
-def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRasterBlockFeedback()):
+def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRasterBlockFeedback()) -> list:
     """Classify a raster.
 
     Note: cannot use a custom shader function QgsColorRampShader subclass because it's lost in
@@ -226,12 +228,6 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     raster_layer.triggerRepaint()
 
     return unique_indexes
-
-
-def rat_log(message, level=Qgis.Info):
-
-    QgsMessageLog.logMessage(message, "RAT", level)
-
 
 def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=None, expand=None):
     """Remove duplicate entries from layer legend.

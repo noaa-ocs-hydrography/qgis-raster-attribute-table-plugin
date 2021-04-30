@@ -23,6 +23,7 @@ from qgis.core import QgsRasterLayer
 from rat_utils import get_rat
 from rat_model import RATModel
 from rat_classes import RATField
+from rat_constants import RAT_COLOR_HEADER_NAME
 
 class TestRATModel(TestCase):
 
@@ -110,6 +111,7 @@ class TestRATModel(TestCase):
         self.assertTrue({'R', 'G', 'B'}.issubset(model.headers))
         self.assertTrue(rat.has_color)
         self.assertTrue(model.has_color)
+        self.assertTrue(RAT_COLOR_HEADER_NAME in rat.keys)
 
 
 if __name__ == '__main__':
