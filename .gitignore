@@ -138,3 +138,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Backups
+*~
+
+# Vscode
+.vscode/
+
