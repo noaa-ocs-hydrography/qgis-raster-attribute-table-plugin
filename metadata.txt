@@ -15,6 +15,6 @@ changelog:
     * initial implementation
 
 
-icon:rat_icon.svg
+icon:icons/rat_icon.svg
 email:apasotti@gmail.com
 author:Alessandro Pasotti

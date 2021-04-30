@@ -13,10 +13,11 @@ __date__ = '2021-04-21'
 __copyright__ = 'Copyright 2021, ItOpen'
 
 
+import os
 from osgeo import gdal
 
 from qgis.PyQt.QtCore import QAbstractTableModel, QModelIndex, QVariant, Qt, QCoreApplication
-from qgis.PyQt.QtGui import QBrush, QColor
+from qgis.PyQt.QtGui import QBrush, QColor, QPixmap
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
@@ -238,6 +239,13 @@ class RATModel(QAbstractTableModel):
 
         if role == Qt.ToolTipRole:
             return self.getHeaderTooltip(section)
+
+
+        if role == Qt.DecorationRole:
+            field_name = self.headers[section]
+            is_color = self.has_color and field_name == RAT_COLOR_HEADER_NAME
+            if is_color or self.columnIsAnyRGBData(section):
+                return QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'paletted.svg'))
 
         return super().headerData(section, orientation, role)
 
