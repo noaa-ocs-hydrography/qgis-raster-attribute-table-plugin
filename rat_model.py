@@ -231,21 +231,22 @@ class RATModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
 
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            try:
-                return self.headers[section]
-            except:
-                pass
+        if orientation == Qt.Horizontal:
+            
+            if role == Qt.DisplayRole:
+                try:
+                    return self.headers[section]
+                except:
+                    pass
 
-        if role == Qt.ToolTipRole:
-            return self.getHeaderTooltip(section)
+            elif role == Qt.ToolTipRole:
+                return self.getHeaderTooltip(section)
 
-
-        if role == Qt.DecorationRole:
-            field_name = self.headers[section]
-            is_color = self.has_color and field_name == RAT_COLOR_HEADER_NAME
-            if is_color or self.columnIsAnyRGBData(section):
-                return QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'paletted.svg'))
+            elif role == Qt.DecorationRole:
+                field_name = self.headers[section]
+                is_color = self.has_color and field_name == RAT_COLOR_HEADER_NAME
+                if is_color or self.columnIsAnyRGBData(section):
+                    return QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'paletted.svg'))
 
         return super().headerData(section, orientation, role)
 
