@@ -1,7 +1,3 @@
----
-marp: false
----
-
 
 ![test_workflow](https://github.com/elpaso/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg)
 
