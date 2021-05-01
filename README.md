@@ -2,9 +2,13 @@
 marp: false
 ---
 
+
+![test_workflow](https://github.com/elpaso/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg)
+
 # Raster Attribute Table QGIS Plugin
 
-QGIS plugin to display and edit Raster Attribute Tables (RATs) for discrete rasters.
+QGIS plugin to display and edit Raster Attribute Tables (RATs) for discrete rasters using
+paletted/unique-values renderer.
 
 ## Supported formats
 
@@ -21,7 +25,6 @@ QGIS plugin to display and edit Raster Attribute Tables (RATs) for discrete rast
   - row add/remove
   - column add/remove
 
-+ RAT export to `vat.dbf` format
 + Color support (RGBA)
 
 ## Current limitations/unsupported features
