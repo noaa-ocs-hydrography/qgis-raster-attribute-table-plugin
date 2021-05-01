@@ -229,6 +229,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
 
     return unique_indexes
 
+
 def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=None, expand=None):
     """Remove duplicate entries from layer legend.
 
@@ -425,3 +426,170 @@ def data_type_name(data_type) -> str:
         data_type_name = QCoreApplication.translate('RAT', 'String')
 
     return data_type_name
+
+
+def rat_column_info() -> dict:
+    """Return information about all supported and unsupported raster column types"""
+
+    return {
+        gdal.GFU_Generic: {
+            'name': QCoreApplication.translate('RAT', 'General purpose field.'),
+            'unique': False,
+            'required': False,
+            'is_color': False,
+            'data_types': [gdal.GFT_Integer, gdal.GFT_Real, gdal.GFT_String],
+            'supported': True,
+        },
+        gdal.GFU_PixelCount: {
+            'name': QCoreApplication.translate('RAT', 'Histogram pixel count'),
+            'unique': True,
+            'required': True,
+            'is_color': False,
+            'data_types': [gdal.GFT_Integer],
+            'supported': True,
+        },
+        gdal.GFU_Name: {
+            'name': QCoreApplication.translate('RAT', 'Class name'),
+            'unique': False,
+            'required': True,
+            'is_color': False,
+            'data_types': [gdal.GFT_String],
+            'supported': True,
+        },
+        gdal.GFU_MinMax: {
+            'name': QCoreApplication.translate('RAT', 'Class value(min=max)'),
+            'unique': True,
+            'required': False,
+            'is_color': False,
+            'data_types': [gdal.GFT_Integer, gdal.GFT_Real],
+            'supported': True,
+        },
+        gdal.GFU_Red: {
+            'name': QCoreApplication.translate('RAT', 'Red class color (0-255)'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': True,
+        },
+        gdal.GFU_Green: {
+            'name': QCoreApplication.translate('RAT', 'Green class color (0-255)'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': True,
+        },
+        gdal.GFU_Blue: {
+            'name': QCoreApplication.translate('RAT', 'Blue class color (0-255)'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': True,
+        },
+        gdal.GFU_Alpha: {
+            'name': QCoreApplication.translate('RAT', 'Alpha(0=transparent, 255=opaque)'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': True,
+        },
+
+        # NOT YET SUPPORTED!!
+
+        gdal.GFU_Min: {
+            'name': QCoreApplication.translate('RAT', 'Class range minimum'),
+            'unique': True,
+            'required': False,
+            'is_color': False,
+            'data_types': [gdal.GFT_Integer, gdal.GFT_Real],
+            'supported': False,
+        },
+        gdal.GFU_Max: {
+            'name': QCoreApplication.translate('RAT', 'Class range maximum'),
+            'unique': True,
+            'required': False,
+            'is_color': False,
+            'data_types': [gdal.GFT_Integer, gdal.GFT_Real],
+            'supported': False,
+        },
+        gdal.GFU_RedMin: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Red Minimum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_GreenMin: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Green Minimum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_BlueMin: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Blue Minimum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_AlphaMin: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Alpha Minimum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_RedMax: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Red Maximum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_GreenMax: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Green Maximum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_BlueMax: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Blue Maximum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_AlphaMax: {
+            'name': QCoreApplication.translate('RAT', 'Color Range Alpha Maximum'),
+            'unique': True,
+            'required': False,
+            'is_color': True,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+        gdal.GFU_MaxCount: {
+            'name': QCoreApplication.translate('RAT', 'Maximum GFU value(equals to GFU_AlphaMax+1 currently)'),
+            'unique': True,
+            'required': False,
+            'data_types': [gdal.GFT_Integer],
+            'supported': False,
+        },
+    }
+
+
+def rat_supported_column_info() -> dict:
+    """Return information about supported raster column types"""
+
+    return {usage: info for usage, info in rat_column_info().items() if info['supported']}

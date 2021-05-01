@@ -29,13 +29,13 @@ from qgis.PyQt.QtTest import QAbstractItemModelTester
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
 try:
-    from ..rat_utils import get_rat, rat_classify, deduplicate_legend_entries
+    from ..rat_utils import get_rat, rat_classify, deduplicate_legend_entries, rat_column_info, rat_supported_column_info
     from ..rat_model import RATModel
     from ..rat_log import rat_log
     from ..rat_classes import RATField
     from ..rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, RAT_COLOR_HEADER_NAME
 except ValueError:
-    from rat_utils import get_rat, rat_classify, deduplicate_legend_entries
+    from rat_utils import get_rat, rat_classify, deduplicate_legend_entries, rat_column_info, rat_supported_column_info
     from rat_log import rat_log
     from rat_model import RATModel
     from rat_classes import RATField
@@ -154,6 +154,26 @@ class RasterAttributeTableDialog(QDialog):
                                         'RAT', "Error Removing Row"),
                                     QCoreApplication.translate('RAT', "An error occourred while removing a row from the RAT!"))
 
+    def allowedAddedUsages(self) -> list:
+        """Return the list of not-color usages that can be added
+
+        :return: allowed usages that can be added
+        :rtype: list
+        """
+
+        allowed_usages = []
+        usages = self.model.rat.field_usages
+        for usage, info in rat_supported_column_info().items():
+            if not info['is_color'] and (not info['unique'] or usage not in usages):
+                allowed_usages.append(usage)
+
+        return allowed_usages
+
+    def canAddAnyColumn(self) -> bool:
+        """Check if any column can be added"""
+
+        return not self.model.has_color or len(self.allowedAddedUsages()) > 0
+
     def addColumn(self):
 
         dlg = AddColumnDialog(self.model, self.iface)
@@ -165,6 +185,22 @@ class RasterAttributeTableDialog(QDialog):
         for field in self.model.rat.fields.values():
             if field.usage not in {gdal.GFU_MinMax, gdal.GFU_PixelCount}:
                 dlg.mColumn.addItem(field.name)
+
+        # List allowed usages
+        allowed_usages = self.allowedAddedUsages()
+
+        if not allowed_usages:
+            if not self.model.has_color:
+                dlg.mColor.setChecked(True)
+                dlg.mStandardColumn.setEnabled(False)
+            else:  # We cannot add any field, we should never get here!
+                rat_log('Cannot add any column: this should have been checked before getting so far!', Qgis.Critical)
+
+        else:
+            usages_info = rat_column_info()
+            for usage in allowed_usages:
+                                    dlg.mUsage.addItem(usages_info[usage]['name'], usage)
+
 
         if dlg.exec_() == QDialog.Accepted:
             position = dlg.mColumn.currentText()
@@ -185,8 +221,9 @@ class RasterAttributeTableDialog(QDialog):
 
             else:
                 data_type = dlg.mDataType.currentData()
+                usage = dlg.mUsage.currentData()
                 name = dlg.mName.text()
-                field = RATField(name, gdal.GFU_Generic, data_type)
+                field = RATField(name, usage, data_type)
                 result, error_message = self.model.insert_column(
                     insertion_point, field)
                 if not result:
@@ -264,7 +301,7 @@ class RasterAttributeTableDialog(QDialog):
         enable_editing_buttons = self.mRATView.selectionModel(
         ).currentIndex().isValid() and self.editable
 
-        self.mAddColumnToolButton.setEnabled(enable_editing_buttons)
+        self.mAddColumnToolButton.setEnabled(enable_editing_buttons and self.canAddAnyColumn())
         self.mRemoveColumnToolButton.setEnabled(enable_editing_buttons)
         self.mAddRowToolButton.setEnabled(enable_editing_buttons)
         self.mRemoveRowToolButton.setEnabled(enable_editing_buttons)

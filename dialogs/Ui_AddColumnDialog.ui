@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>422</width>
-    <height>430</height>
+    <height>473</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,23 +54,23 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="1" column="1">
-       <widget class="QLineEdit" name="mName">
-        <property name="placeholderText">
-         <string>Enter the name of the new column</string>
+       <widget class="QComboBox" name="mDataType"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="mError">
+        <property name="text">
+         <string>Error</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Name</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="mDataType"/>
-      </item>
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Data type</string>
@@ -78,9 +78,19 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLabel" name="mError">
+       <widget class="QLineEdit" name="mName">
+        <property name="placeholderText">
+         <string>Enter the name of the new column</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="mUsage"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Error</string>
+         <string>Usage</string>
         </property>
        </widget>
       </item>

@@ -22,13 +22,13 @@ from qgis.core import QgsApplication, Qgis
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
-    from .rat_utils import data_type_name
+    from .rat_utils import data_type_name, rat_column_info
     from .rat_log import rat_log
     from .rat_classes import RATField
 except ImportError:
     from rat_constants import RAT_COLOR_HEADER_NAME
     from rat_log import rat_log
-    from rat_utils import data_type_name
+    from rat_utils import data_type_name, rat_column_info
     from rat_classes import RATField
 
 
@@ -168,46 +168,7 @@ class RATModel(QAbstractTableModel):
 
     def getUsageDescription(self, usage) -> str:
 
-        if usage == gdal.GFU_Generic:
-            return QCoreApplication.translate('RAT', 'General purpose field.')
-        elif usage == gdal.GFU_PixelCount:
-            return QCoreApplication.translate('RAT', 'Histogram pixel count')
-        elif usage == gdal.GFU_Name:
-            return QCoreApplication.translate('RAT', 'Class name')
-        elif usage == gdal.GFU_Min:
-            return QCoreApplication.translate('RAT', 'Class range minimum')
-        elif usage == gdal.GFU_Max:
-            return QCoreApplication.translate('RAT', 'Class range maximum')
-        elif usage == gdal.GFU_MinMax:
-            return QCoreApplication.translate('RAT', 'Class value(min=max)')
-        elif usage == gdal.GFU_Red:
-            return QCoreApplication.translate('RAT', 'Red class color (0-255)')
-        elif usage == gdal.GFU_Green:
-            return QCoreApplication.translate('RAT', 'Green class color (0-255)')
-        elif usage == gdal.GFU_Blue:
-            return QCoreApplication.translate('RAT', 'Blue class color (0-255)')
-        elif usage == gdal.GFU_Alpha:
-            return QCoreApplication.translate('RAT', 'Alpha(0=transparent, 255=opaque)')
-        elif usage == gdal.GFU_RedMin:
-            return QCoreApplication.translate('RAT', 'Color Range Red Minimum')
-        elif usage == gdal.GFU_GreenMin:
-            return QCoreApplication.translate('RAT', 'Color Range Green Minimum')
-        elif usage == gdal.GFU_BlueMin:
-            return QCoreApplication.translate('RAT', 'Color Range Blue Minimum')
-        elif usage == gdal.GFU_AlphaMin:
-            return QCoreApplication.translate('RAT', 'Color Range Alpha Minimum')
-        elif usage == gdal.GFU_RedMax:
-            return QCoreApplication.translate('RAT', 'Color Range Red Maximum')
-        elif usage == gdal.GFU_GreenMax:
-            return QCoreApplication.translate('RAT', 'Color Range Green Maximum')
-        elif usage == gdal.GFU_BlueMax:
-            return QCoreApplication.translate('RAT', 'Color Range Blue Maximum')
-        elif usage == gdal.GFU_AlphaMax:
-            return QCoreApplication.translate('RAT', 'Color Range Alpha Maximum')
-        elif usage == gdal.GFU_MaxCount:
-            return QCoreApplication.translate('RAT', 'Maximum GFU value(equals to GFU_AlphaMax+1 currently)')
-        else:
-            return ''
+        return rat_column_info()[usage]['name']
 
     def getHeaderTooltip(self, section) -> str:
 
