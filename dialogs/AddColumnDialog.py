@@ -17,7 +17,7 @@ import os
 from osgeo import gdal
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication, QByteArray, pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication, QByteArray
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QDialogButtonBox
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
@@ -43,7 +43,7 @@ class AddColumnDialog(QDialog):
 
         try:
             self.restoreGeometry(QgsSettings().value(
-                "AddColumn/geometry", None, QByteArray, QgsSettings.Plugins))
+                "RATAddColumn/geometry", None, QByteArray, QgsSettings.Plugins))
         except:
             pass
 
@@ -74,12 +74,12 @@ class AddColumnDialog(QDialog):
         self.mButtonBox.button(QDialogButtonBox.Ok).setEnabled(is_valid)
 
     def accept(self):
-        QgsSettings().setValue("AddColumn/geometry",
+        QgsSettings().setValue("RATAddColumn/geometry",
                                self.saveGeometry(), QgsSettings.Plugins)
 
         super().accept()
 
     def reject(self):
-        QgsSettings().setValue("AddColumn/geometry",
+        QgsSettings().setValue("RATAddColumn/geometry",
                                self.saveGeometry(), QgsSettings.Plugins)
         super().reject()

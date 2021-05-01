@@ -247,6 +247,45 @@ class TestRATClasses(TestCase):
         for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
             self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index], color_map[rat.data[value_column][row_index]])
 
+    def test_add_remove_row(self):
+
+        def _test(raster_layer):
+
+            rat = get_rat(raster_layer, 1)
+            self.assertNotEqual(rat.data[rat.value_column][-1], 0)
+            row_count = len(rat.data[rat.value_column])
+
+            result, error_message = rat.insert_row(0)
+            self.assertTrue(result)
+            self.assertEqual(len(rat.data[rat.value_column]), row_count + 1)
+            self.assertEqual(rat.data[rat.value_column][0], 0)
+
+            result, error_message = rat.remove_row(0)
+            self.assertTrue(result)
+            self.assertEqual(len(rat.data[rat.value_column]), row_count)
+            self.assertNotEqual(rat.data[rat.value_column][0], 0)
+
+            last = len(rat.data[rat.value_column])
+            result, error_message = rat.insert_row(last)
+            self.assertTrue(result)
+            self.assertEqual(len(rat.data[rat.value_column]), row_count + 1)
+            self.assertEqual(rat.data[rat.value_column][last], 0)
+
+            result, error_message = rat.remove_row(last)
+            self.assertTrue(result)
+            self.assertEqual(len(rat.data[rat.value_column]), row_count)
+            self.assertNotEqual(rat.data[rat.value_column][last - 1], 0)
+
+            # Invalid ranges
+            last = len(rat.data[rat.value_column])
+            self.assertFalse(rat.insert_row(-1)[0])
+            self.assertFalse(rat.insert_row(last +1)[0])
+            self.assertFalse(rat.remove_row(-1)[0])
+            self.assertFalse(rat.remove_row(last)[0])
+
+        _test(self.raster_layer_dbf)
+        _test(self.raster_layer)
+
 
 
 if __name__ == '__main__':

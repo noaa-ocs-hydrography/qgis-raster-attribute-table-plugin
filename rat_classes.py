@@ -419,7 +419,7 @@ class RAT:
 
         :param raster_layer: raster layer
         :type raster_layer: QgsRasterLayer
-        :return: TRUE on success if all colors could be set
+        :return: TRUE if at least one color could be set
         :rtype: bool
         """
 
@@ -508,3 +508,49 @@ class RAT:
         del(self.__data[RAT_COLOR_HEADER_NAME])
 
         return removed
+
+    def remove_row(self, row) -> (bool, str):
+        """Removes the row
+
+        :param row: row index 0-based
+        :type row: int
+        :return: (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
+
+        if row < 0  or row >= len(self.data[self.value_column]):
+            return False, QCoreApplication.translate('RAT', f'Out of range error removing row {row}')
+        else:
+            for values in self.values:
+                values.pop(row)
+            return True, None
+
+
+    def insert_row(self, row) -> (bool, str):
+        """Insert a row before position row
+
+        :param row: insertion point
+        :type row: int
+        :return: (TRUE, None) on success, (FALSE, error_message) on failure
+        :rtype: tuple
+        """
+
+        if row < 0  or row > len(self.data[self.value_column]):
+            return False, QCoreApplication.translate('RAT', f'Out of range error adding a new row {row}')
+        else:
+            for key in self.keys:
+                if key == RAT_COLOR_HEADER_NAME:
+                    data = QColor(Qt.white)
+                else:
+                    field = self.fields[key]
+                    if field.is_color:
+                        data = 255
+                    elif field.type in {gdal.GFT_Integer, gdal.GFT_Real}:
+                        data = 0
+                    else:
+                        data = ''
+                self.__data[key].insert(row, data)
+            return True, None
+
+
+

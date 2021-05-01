@@ -25,6 +25,7 @@ from osgeo import gdal
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QByteArray, QSortFilterProxyModel
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QStyledItemDelegate, QColorDialog
+from qgis.PyQt.QtTest import QAbstractItemModelTester
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
 try:
@@ -41,6 +42,7 @@ except ValueError:
     from rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, RAT_COLOR_HEADER_NAME
 
 from .AddColumnDialog import AddColumnDialog
+from .AddRowDialog import AddRowDialog
 
 
 class ColorDelegate(QStyledItemDelegate):
@@ -77,9 +79,13 @@ class RasterAttributeTableDialog(QDialog):
             [raster_layer.bandName(bn) for bn in range(1, raster_layer.bandCount() + 1)])
 
         self.mToggleEditingToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionToggleEditing.svg"))
+            QgsApplication.getThemeIcon("/mActionEditTable.svg"))
         self.mAddColumnToolButton.setIcon(
             QgsApplication.getThemeIcon("/mActionNewAttribute.svg"))
+        self.mAddRowToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionNewTableRow.svg"))
+        self.mRemoveRowToolButton.setIcon(
+            QgsApplication.getThemeIcon("/mActionRemoveSelectedFeature.svg"))
         self.mRemoveColumnToolButton.setIcon(
             QgsApplication.getThemeIcon("/mActionDeleteAttribute.svg"))
         self.mSaveChangesToolButton.setIcon(
@@ -109,6 +115,8 @@ class RasterAttributeTableDialog(QDialog):
         self.mSaveChangesToolButton.clicked.connect(self.saveChanges)
         self.mAddColumnToolButton.clicked.connect(self.addColumn)
         self.mRemoveColumnToolButton.clicked.connect(self.removeColumn)
+        self.mAddRowToolButton.clicked.connect(self.addRow)
+        self.mRemoveRowToolButton.clicked.connect(self.removeRow)
 
         try:
             self.restoreGeometry(QgsSettings().value(
@@ -117,6 +125,34 @@ class RasterAttributeTableDialog(QDialog):
             pass
 
         self.updateButtons()
+
+    def addRow(self):
+
+        current_row = self.proxyModel.mapToSource(
+            self.mRATView.selectionModel().currentIndex()).row()
+        dlg = AddRowDialog(current_row)
+
+        if dlg.exec_() == QDialog.Accepted:
+            if not self.model.insert_row(current_row + (0 if dlg.mBefore.isChecked() else 1)):
+                QMessageBox.warning(None,
+                                    QCoreApplication.translate(
+                                        'RAT', "Error Adding Row"),
+                                    QCoreApplication.translate('RAT', "An error occourred while adding a new row to the RAT!"))
+
+    def removeRow(self):
+
+        if QMessageBox.question(None,
+                                QCoreApplication.translate(
+                                    'RAT', "Remove Row"),
+                                QCoreApplication.translate('RAT', "Removing a row will remove the value from the RAT, do you want to continue?")) == QMessageBox.Yes:
+
+            current_row = self.proxyModel.mapToSource(
+                self.mRATView.selectionModel().currentIndex()).row()
+            if not self.model.remove_row(current_row):
+                QMessageBox.warning(None,
+                                    QCoreApplication.translate(
+                                        'RAT', "Error Removing Row"),
+                                    QCoreApplication.translate('RAT', "An error occourred while removing a row from the RAT!"))
 
     def addColumn(self):
 
@@ -148,10 +184,11 @@ class RasterAttributeTableDialog(QDialog):
                     self.is_dirty = True
 
             else:
-                data_type = dlg.mType.currentData()
+                data_type = dlg.mDataType.currentData()
                 name = dlg.mName.text()
                 field = RATField(name, gdal.GFU_Generic, data_type)
-                result, error_message = self.model.insert_column(insertion_point, field)
+                result, error_message = self.model.insert_column(
+                    insertion_point, field)
                 if not result:
                     QMessageBox.warning(None,
                                         QCoreApplication.translate(
@@ -159,7 +196,6 @@ class RasterAttributeTableDialog(QDialog):
                                         QCoreApplication.translate('RAT', "An error occourred while adding a column to the RAT: %s" % error_message))
                 else:
                     self.is_dirty = True
-
 
     def columnIsColor(self, column_name) -> bool:
 
@@ -171,8 +207,15 @@ class RasterAttributeTableDialog(QDialog):
         column_can_be_removed = False
         try:
             column_name = self.model.headers[selected_column]
-            if self.columnIsColor(column_name) or self.model.rat.fields[column_name].usage in {gdal.GFU_Generic}:
+            usage = self.model.rat.fields[column_name].usage
+            if self.columnIsColor(column_name) or usage in {gdal.GFU_Generic}:
                 column_can_be_removed = True
+            elif usage == gdal.GFU_Name:
+                # Check if it's not the only one
+                names_count = len(
+                    [field for field in self.model.rat.fields if field.usage == gdal.GFU_Name])
+                if names_count > 1:
+                    column_can_be_removed = True
         except Exception as ex:
             rat_log('Could not get selected column type: %s' % ex)
 
@@ -218,9 +261,13 @@ class RasterAttributeTableDialog(QDialog):
 
     def updateButtons(self):
 
-        self.mAddColumnToolButton.setEnabled(self.editable)
-        self.mRemoveColumnToolButton.setEnabled(
-            self.editable and self.selectedColumnCanBeRemoved())
+        enable_editing_buttons = self.mRATView.selectionModel(
+        ).currentIndex().isValid() and self.editable
+
+        self.mAddColumnToolButton.setEnabled(enable_editing_buttons)
+        self.mRemoveColumnToolButton.setEnabled(enable_editing_buttons)
+        self.mAddRowToolButton.setEnabled(enable_editing_buttons)
+        self.mRemoveRowToolButton.setEnabled(enable_editing_buttons)
         self.mSaveChangesToolButton.setEnabled(self.is_dirty)
 
     def setEditable(self, editable):
@@ -281,7 +328,8 @@ class RasterAttributeTableDialog(QDialog):
     def dirty(self, *args):
 
         self.is_dirty = True
-        self.mSaveChangesToolButton.setEnabled(self.is_dirty)
+        rat_log('Model is dirty')
+        self.updateButtons()
 
     def loadRat(self, band_0_based) -> bool:
         """Load RAT for raster band 0-based"""
@@ -297,21 +345,33 @@ class RasterAttributeTableDialog(QDialog):
 
         if self.rat.keys:
             self.model = RATModel(self.rat)
+            if os.environ.get('CI'):
+                self.tester = QAbstractItemModelTester(self.model)
             self.model.dataChanged.connect(self.dirty)
+            self.model.rowsInserted.connect(self.dirty)
+            self.model.rowsRemoved.connect(self.dirty)
+            self.model.columnsInserted.connect(self.dirty)
+            self.model.columnsRemoved.connect(self.dirty)
             self.proxyModel = QSortFilterProxyModel(self)
             self.proxyModel.setSourceModel(self.model)
             self.mRATView.setModel(self.proxyModel)
             self.mRATView.selectionModel().selectionChanged.connect(self.updateButtons)
+
+            # Color picker
             if self.rat.has_color:
                 colorDelegate = ColorDelegate(self.mRATView)
                 self.mRATView.setItemDelegateForColumn(0, colorDelegate)
+
             headers = self.rat.keys
-            self.mClassifyComboBox.addItems([field.name for field in self.rat.fields.values() if field.usage in {gdal.GFU_Name, gdal.GFU_Generic}])
+            self.mClassifyComboBox.addItems([field.name for field in self.rat.fields.values(
+            ) if field.usage in {gdal.GFU_Name, gdal.GFU_Generic}])
             criteria = self.raster_layer.customProperty(
                 RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
             if criteria in headers:
                 self.mClassifyComboBox.setCurrentIndex(
                     self.mClassifyComboBox.findText(criteria))
+            self.mRATView.sortByColumn(self.model.headers.index(
+                self.rat.value_column), Qt.AscendingOrder)
             return True
         else:
             rat_log(QCoreApplication.translate(

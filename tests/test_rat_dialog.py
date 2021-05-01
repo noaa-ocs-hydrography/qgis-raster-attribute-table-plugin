@@ -17,7 +17,7 @@ import os
 from unittest import TestCase, main
 
 from qgis.core import QgsApplication, QgsRasterLayer
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QModelIndex
 
 from dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from rat_constants import RAT_COLOR_HEADER_NAME
@@ -43,8 +43,8 @@ class RasterAttributeTableDialogTest(TestCase):
 
         dialog = RasterAttributeTableDialog(raster_layer)
         model = dialog.mRATView.model()
-        self.assertEqual(model.rowCount(model.index(0, 0)), 59)
-        self.assertEqual(model.columnCount(model.index(0, 0)), 17)
+        self.assertEqual(model.rowCount(QModelIndex()), 59)
+        self.assertEqual(model.columnCount(QModelIndex()), 17)
         header_model = dialog.mRATView.horizontalHeader().model()
         self.assertEqual(header_model.headerData(
             0, Qt.Horizontal), RAT_COLOR_HEADER_NAME)
@@ -58,7 +58,8 @@ class RasterAttributeTableDialogTest(TestCase):
             0, Qt.Horizontal), RAT_COLOR_HEADER_NAME)
         self.assertEqual(header_model.headerData(1, Qt.Horizontal), 'VALUE')
 
-        #dialog.exec_()
+        if not os.environ.get('CI', False):
+            dialog.exec_()
 
 
 if __name__ == '__main__':

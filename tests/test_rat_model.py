@@ -17,15 +17,22 @@ import os
 from osgeo import gdal
 import shutil
 from unittest import TestCase, main
-from qgis.PyQt.QtCore import QTemporaryDir, Qt
+from qgis.PyQt.QtCore import QTemporaryDir, Qt, QModelIndex
+from qgis.PyQt.QtTest import QAbstractItemModelTester
 from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsRasterLayer
+from qgis.core import QgsRasterLayer, QgsApplication
 from rat_utils import get_rat
 from rat_model import RATModel
 from rat_classes import RATField
 from rat_constants import RAT_COLOR_HEADER_NAME
 
 class TestRATModel(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.qgs = QgsApplication([], False)
+        cls.qgs.initQgis()
 
     def setUp(self):
 
@@ -49,17 +56,18 @@ class TestRATModel(TestCase):
         self.assertTrue(rat.isValid())
 
         model = RATModel(rat)
-        column_count = model.columnCount(model.index(0,0))
+        tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Warning)
+        column_count = model.columnCount(QModelIndex())
         field = RATField('f1', gdal.GFU_Generic, gdal.GFT_String)
         self.assertTrue(model.insert_column(3, field)[0])
         self.assertEqual(model.columnCount(
-            model.index(0, 0)), column_count + 1)
+            QModelIndex()), column_count + 1)
 
         # Error
         field = RATField('f1', gdal.GFU_Generic, gdal.GFT_String)
         self.assertFalse(model.insert_column(3, field)[0])
         self.assertEqual(model.columnCount(
-            model.index(0, 0)), column_count + 1)
+            QModelIndex()), column_count + 1)
 
     def test_remove_column(self):
 
@@ -67,19 +75,21 @@ class TestRATModel(TestCase):
         self.assertTrue(rat.isValid())
 
         model = RATModel(rat)
-        column_count = model.columnCount(model.index(0, 0))
+        tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Warning)
+        column_count = model.columnCount(QModelIndex())
         self.assertFalse(model.remove_column(0)[0])
         self.assertFalse(model.remove_column(1)[0])
         self.assertTrue(model.remove_column(2)[0])
         self.assertEqual(model.columnCount(
-            model.index(0, 0)), column_count - 1)
+            QModelIndex()), column_count - 1)
 
     def test_edit_color(self):
 
         rat = get_rat(self.raster_layer_color, 1)
         model = RATModel(rat)
+        tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Warning)
 
-        index = model.index(0, 0, model.index(0, 0))
+        index = model.index(0, 0)
         value = QColor(Qt.magenta)
         model.setData(index, value)
 
@@ -89,15 +99,17 @@ class TestRATModel(TestCase):
 
         rat = get_rat(self.raster_layer_color, 1)
         model = RATModel(rat)
+        tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Warning)
+
         self.assertTrue({'R', 'G', 'B'}.issubset(rat.keys))
         self.assertTrue({'R', 'G', 'B'}.issubset(model.headers))
         self.assertTrue(model.has_color)
-        column_count = model.columnCount(model.index(0, 0, model.index(0, 0)))
+        column_count = model.columnCount(QModelIndex())
         self.assertEqual(column_count, 17)
 
         # Remove colors
         self.assertTrue(model.remove_color())
-        self.assertEqual(model.columnCount(model.index(0, 0, model.index(0, 0))), column_count - 4)
+        self.assertEqual(model.columnCount(QModelIndex()), column_count - 4)
 
         self.assertFalse(rat.has_color)
         self.assertFalse(model.has_color)
@@ -106,12 +118,49 @@ class TestRATModel(TestCase):
 
         # Add color back (with alpha)
         self.assertTrue(model.insert_color(2))
-        self.assertEqual(model.columnCount(model.index(0, 0, model.index(0, 0))), column_count + 1)
+        self.assertEqual(model.columnCount(QModelIndex()), column_count + 1)
         self.assertTrue({'R', 'G', 'B'}.issubset(rat.keys))
         self.assertTrue({'R', 'G', 'B'}.issubset(model.headers))
         self.assertTrue(rat.has_color)
         self.assertTrue(model.has_color)
         self.assertTrue(RAT_COLOR_HEADER_NAME in rat.keys)
+
+    def test_add_remove_row(self):
+
+        def _test(raster_layer):
+
+            rat = get_rat(self.raster_layer_color, 1)
+            model = RATModel(rat)
+            tester = QAbstractItemModelTester(model, QAbstractItemModelTester.FailureReportingMode.Warning)
+
+            row_count = model.rowCount(QModelIndex())
+            value_index = 1 if model.has_color else 0
+            value_0 = model.data(model.index(0, value_index, QModelIndex()))
+            value_last = model.data(model.index(row_count - 1, value_index, QModelIndex()))
+
+            # Insert first
+            self.assertTrue(model.insert_row(0))
+            self.assertEqual(model.rowCount(QModelIndex()), row_count + 1)
+            self.assertNotEqual(model.data(model.index(0, value_index, QModelIndex())), value_0)
+            self.assertEqual(model.data(model.index(0, value_index, QModelIndex())), 0)
+
+            self.assertTrue(model.remove_row(0))
+            self.assertEqual(model.rowCount(QModelIndex()), row_count)
+            self.assertEqual(model.data(model.index(0, value_index, QModelIndex())), value_0)
+
+            # Insert last
+            self.assertTrue(model.insert_row(row_count))
+            self.assertEqual(model.rowCount(QModelIndex()), row_count + 1)
+            self.assertNotEqual(model.data(model.index(row_count, value_index, QModelIndex())), value_last)
+            self.assertEqual(model.data(model.index(row_count, value_index, QModelIndex())), 0)
+            self.assertEqual(model.data(model.index(row_count - 1, value_index, QModelIndex())), value_last)
+
+            self.assertTrue(model.remove_row(row_count))
+            self.assertEqual(model.rowCount(QModelIndex()), row_count)
+            self.assertEqual(model.data(model.index(row_count - 1, value_index, QModelIndex())), value_last)
+
+        _test(self.raster_layer)
+        _test(self.raster_layer_color)
 
 
 if __name__ == '__main__':

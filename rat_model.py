@@ -18,6 +18,7 @@ from osgeo import gdal
 
 from qgis.PyQt.QtCore import QAbstractTableModel, QModelIndex, QVariant, Qt, QCoreApplication
 from qgis.PyQt.QtGui import QBrush, QColor, QPixmap
+from qgis.core import QgsApplication, Qgis
 
 try:
     from .rat_constants import RAT_COLOR_HEADER_NAME
@@ -41,8 +42,8 @@ class RATModel(QAbstractTableModel):
         :type rat: RAT
         """
 
-        super().__init__(parent)
         self.rat = rat
+        super().__init__(parent)
         self.editable = False
 
     @property
@@ -81,6 +82,13 @@ class RATModel(QAbstractTableModel):
         return self.rat.fields[field_name].is_color
 
     def columnIsEditable(self, column) -> bool:
+        """Checks if a column is editable, color columns are not editable directly.
+
+        :param column: [description]
+        :type column: [type]
+        :return: [description]
+        :rtype: bool
+        """
 
         field_name = self.headers[column]
         is_color = self.has_color and field_name == RAT_COLOR_HEADER_NAME
@@ -88,15 +96,7 @@ class RATModel(QAbstractTableModel):
         if is_color:
             return True
 
-        usage = self.rat.fields[field_name].usage
-
-        return not self.columnIsAnyRGBData(column) and usage not in (
-            gdal.GFU_Min,
-            gdal.GFU_Max,
-            gdal.GFU_MinMax,
-            gdal.GFU_PixelCount,
-            gdal.GFU_MaxCount,
-        )
+        return not self.columnIsAnyRGBData(column)
 
     def flags(self, index):
 
@@ -141,7 +141,7 @@ class RATModel(QAbstractTableModel):
                     for field in self.rat.fields.values():
                         if field.is_color:
                             color_column_index = self.index(
-                                index.row(), self.headers.index(field.name), self.index(0, 0))
+                                index.row(), self.headers.index(field.name), QModelIndex())
                             self.dataChanged.emit(
                                 color_column_index, color_column_index)
                     return True
@@ -232,7 +232,7 @@ class RATModel(QAbstractTableModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
 
         if orientation == Qt.Horizontal:
-            
+
             if role == Qt.DisplayRole:
                 try:
                     return self.headers[section]
@@ -246,16 +246,18 @@ class RATModel(QAbstractTableModel):
                 field_name = self.headers[section]
                 is_color = self.has_color and field_name == RAT_COLOR_HEADER_NAME
                 if is_color or self.columnIsAnyRGBData(section):
-                    return QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'paletted.svg'))
+                    return QgsApplication.getThemeIcon('/paletted.svg')
 
         return super().headerData(section, orientation, role)
 
     def rowCount(self, index, parent=QModelIndex()):
-
-        return len(self.rat.values[0])
+        if index.isValid():
+            return 0
+        return len(self.rat.data[self.rat.value_column])
 
     def columnCount(self, index, parent=QModelIndex()):
-
+        if index.isValid():
+            return 0
         return len(self.headers)
 
     ###########################################################
@@ -274,10 +276,10 @@ class RATModel(QAbstractTableModel):
 
         assert isinstance(field, RATField)
         rat_index = index - 1 if self.rat.has_color else index
-        self.beginInsertColumns(self.index(0, 0), index, 1)
+        self.beginInsertColumns(QModelIndex(), index, index)
         result, error_message = self.rat.insert_column(rat_index, field)
         if result:
-            self.insertColumn(index, self.index(0, 0))
+            self.insertColumn(index, QModelIndex())
         self.endInsertColumns()
         return result, error_message
 
@@ -291,10 +293,10 @@ class RATModel(QAbstractTableModel):
         """
 
         column_name = self.headers[index]
-        self.beginRemoveColumns(self.index(0, 0), index, 1)
+        self.beginRemoveColumns(QModelIndex(), index, index)
         result, error_message = self.rat.remove_column(column_name)
         if result:
-            self.removeColumn(index, self.index(0, 0))
+            self.removeColumn(index, QModelIndex())
         self.endRemoveColumns()
         return result, error_message
 
@@ -333,11 +335,46 @@ class RATModel(QAbstractTableModel):
         self.beginResetModel()
         result, error_message = self.rat.insert_color_fields(column)
         if not result:
-            rat_log('Error inserting color columns: %s' % error_message)
+            rat_log('Error inserting color columns: %s' % error_message, Qgis.Warning)
         self.endResetModel()
 
         return result
 
+    def insert_row(self, row) -> bool:
+        """Insert a new row before position row 0-indexed
 
+        :param row: insertion point 0-indexed
+        :type row: int
+        :return: TRUE on success
+        :rtype: bool
+        """
 
+        assert row >= 0 and row <= self.rowCount(QModelIndex()), f'Out of range {row}'
+        self.beginInsertRows(QModelIndex(), row, row)
+        result, error_message = self.rat.insert_row(row)
+        if not result:
+            rat_log('Error inserting a new row: %s' % error_message, Qgis.Warning)
+        self.endInsertRows()
+        row_count = self.rowCount(QModelIndex())
+        rat_log(f'Row {row} inserted successfully, row count is: {row_count}', Qgis.Info)
+        return result
+
+    def remove_row(self, row) -> bool:
+        """Remove the row at position row 0-indexed
+
+        :param row: removal point 0-indexed
+        :type row: int
+        :return: TRUE on success
+        :rtype: bool
+        """
+
+        assert row >= 0 and row < self.rowCount(QModelIndex()), f'Out of range {row}'
+        self.beginRemoveRows(QModelIndex(), row, row)
+        result, error_message = self.rat.remove_row(row)
+        if not result:
+            rat_log('Error removing a row: %s' % error_message, Qgis.Warning)
+        self.endRemoveRows()
+        row_count = self.rowCount(QModelIndex())
+        rat_log(f'Row {row} removed successfully, row count is: {row_count}', Qgis.Info)
+        return result
 
