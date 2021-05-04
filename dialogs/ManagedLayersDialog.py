@@ -17,12 +17,13 @@ import os
 from osgeo import gdal
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication, QByteArray
+from qgis.PyQt.QtCore import QCoreApplication, QByteArray, Qt
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QDialogButtonBox, QListWidgetItem
-from qgis.core import Qgis, QgsApplication, QgsSettings
+from qgis.core import Qgis, QgsApplication, QgsSettings, QgsProject
 
 
 from ..rat_utils import managed_layers
+from ..rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
 
 class ManagedLayersDialog(QDialog):
 
@@ -36,12 +37,15 @@ class ManagedLayersDialog(QDialog):
 
         for layer in managed_layers():
             item = QListWidgetItem(layer.name())
+            item.setData(Qt.UserRole, layer.id())
             self.mManagedLayers.addItem(item)
         try:
             self.restoreGeometry(QgsSettings().value(
                 "RATManagedLayers/geometry", None, QByteArray, QgsSettings.Plugins))
         except:
             pass
+
+        self.mUnmanage.clicked.connect(self.unmanageSelected)
 
     def accept(self):
         QgsSettings().setValue("RATManagedLayers/geometry",
@@ -53,3 +57,14 @@ class ManagedLayersDialog(QDialog):
         QgsSettings().setValue("RATManagedLayers/geometry",
                                self.saveGeometry(), QgsSettings.Plugins)
         super().reject()
+
+    def unmanageSelected(self):
+
+        for item in self.mManagedLayers.selectedItems():
+            layer_id = item.data(Qt.UserRole)
+            layer = QgsProject.instance().mapLayerById(layer_id)
+            if layer:
+                layer.clearCustomProperty(
+                    RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
+
+

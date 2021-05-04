@@ -196,4 +196,5 @@ class RasterAttributeTable(QObject):
     def showManagedLayersDialog(self):
 
         dlg = ManagedLayersDialog(self.iface)
-        dlg.exec_()
+
+

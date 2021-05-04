@@ -378,6 +378,23 @@ class RasterAttributeTableDialog(QDialog):
             self.raster_layer.setCustomProperty(
                 RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, criteria)
 
+    def updateClassify(self):
+
+        current_index = self.mClassifyComboBox.currentIndex()
+        self.mClassifyComboBox.clear()
+        self.mClassifyComboBox.addItems([field.name for field in self.rat.fields.values(
+        ) if field.usage in {gdal.GFU_Name, gdal.GFU_Generic}])
+
+        if current_index > 0:
+            self.mClassifyComboBox.setCurrentIndex(current_index)
+        else:
+            headers = self.rat.keys
+            criteria = self.raster_layer.customProperty(
+                RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
+            if criteria in headers:
+                self.mClassifyComboBox.setCurrentIndex(
+                    self.mClassifyComboBox.findText(criteria))
+
     def dirty(self, *args):
 
         self.is_dirty = True
@@ -405,6 +422,8 @@ class RasterAttributeTableDialog(QDialog):
             self.model.rowsRemoved.connect(self.dirty)
             self.model.columnsInserted.connect(self.dirty)
             self.model.columnsRemoved.connect(self.dirty)
+            self.model.columnsInserted.connect(self.updateClassify)
+            self.model.columnsRemoved.connect(self.updateClassify)
             self.proxyModel = QSortFilterProxyModel(self)
             self.proxyModel.setSourceModel(self.model)
             self.mRATView.setModel(self.proxyModel)
@@ -418,14 +437,7 @@ class RasterAttributeTableDialog(QDialog):
                     colorDelegate = ColorDelegate(self.mRATView)
                 self.mRATView.setItemDelegateForColumn(0, colorDelegate)
 
-            headers = self.rat.keys
-            self.mClassifyComboBox.addItems([field.name for field in self.rat.fields.values(
-            ) if field.usage in {gdal.GFU_Name, gdal.GFU_Generic}])
-            criteria = self.raster_layer.customProperty(
-                RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
-            if criteria in headers:
-                self.mClassifyComboBox.setCurrentIndex(
-                    self.mClassifyComboBox.findText(criteria))
+            self.updateClassify()
             self.mRATView.sortByColumn(self.model.headers.index(
                 self.rat.value_columns[0]), Qt.AscendingOrder)
             return True
