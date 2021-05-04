@@ -156,7 +156,7 @@ class RAT:
 
     @property
     def value_columns(self) -> list:
-        """Returns the list of value clumns:
+        """Returns the list of value columns:
         if the type is THEMATIC there will be just one value column,
         two value columns (min max) will be returnerd for ATHEMATIC RATs
 
@@ -169,6 +169,21 @@ class RAT:
         except:
             return []
 
+    def field_name(self, usage) -> str:
+        """Returns the first field name that matches a usage,
+        an empty string is returned if such a field does not exist.
+
+        :param usage: field usage
+        :type usage: gdal.GFU_*
+        :return: field name or empty string
+        :rtype: sstr
+        """
+
+        try:
+            return [field.name for field in self.fields.values() if field.usage == usage][0]
+        except IndexError:
+            return ''
+
     def isValid(self) -> bool:
 
         return len(self.keys) > 0 and len(self.values) and (gdal.GFU_MinMax in self.field_usages or (gdal.GFU_Min in self.field_usages and gdal.GFU_Max in self.field_usages))
@@ -176,7 +191,7 @@ class RAT:
     @property
     def thematic_type(self):
 
-        return gdal.GRTT_THEMATIC if self.fields[self.value_columns[0]].usage == gdal.GFU_MinMax else gdal.GRTT_ATHEMATIC
+        return gdal.GRTT_THEMATIC if gdal.GFU_MinMax in self.field_usages else gdal.GRTT_ATHEMATIC
 
     @property
     def field_usages(self) -> set:
@@ -520,7 +535,7 @@ class RAT:
             if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
 
                 classes = raster_layer.renderer().classes()
-                value_column = self.value_columns[0]
+                value_column = self.field_name(gdal.GFU_MinMax)
                 return _set_colors(value_column, classes)
 
             # Athematic
@@ -532,8 +547,7 @@ class RAT:
                     if colorRampShaderFcn:
                         classes = colorRampShaderFcn.colorRampItemList()
                         # Get max column
-                        value_column = [field.name for field in self.fields.values(
-                        ) if field.usage == gdal.GFU_Max][0]
+                        value_column = self.field_name(gdal.GFU_Max)
                         return _set_colors(value_column, classes)
 
                 rat_log(f'Error retrieving classes from shader on layer {raster_layer.name()}', Qgis.Critical)

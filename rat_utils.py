@@ -200,17 +200,18 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     """
 
     has_color = rat.has_color
-    value_column_name = rat.value_columns[0]
-    values = rat.data[value_column_name]
     labels = rat.data[criteria]
     label_colors = {}
-    is_integer = isinstance(values[0], int)
     unique_indexes = []
 
     if rat.thematic_type == gdal.GRTT_THEMATIC:
 
         # Use paletted
         rat_log('Using paletted renderer')
+
+        value_column_name = rat.field_name(gdal.GFU_MinMax)
+        values = rat.data[value_column_name]
+        is_integer = isinstance(values[0], int)
 
         if ramp is None:
             ramp = QgsRandomColorRamp()
@@ -238,7 +239,8 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
 
         rat_log('Using singleband pseudocolor renderer')
 
-        min_value_column, max_value_column = rat.value_columns
+        min_value_column = rat.field_name(gdal.GFU_Min)
+        max_value_column = rat.field_name(gdal.GFU_Max)
 
         # Collect unique values and colors from criteria
         row_index = 1

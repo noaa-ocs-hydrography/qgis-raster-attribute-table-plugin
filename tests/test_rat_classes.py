@@ -111,7 +111,7 @@ class TestRATClasses(TestCase):
 
         field = RATField('f3', gdal.GFU_Generic, gdal.GFT_String)
         self.assertEqual(field.qgis_type, QVariant.String)
-        self.assertTrue(rat.insert_column(len(rat.keys) -1, field)[0])
+        self.assertTrue(rat.insert_column(len(rat.keys) - 1, field)[0])
         self.assertIn('f3', rat.fields.keys())
         self.assertEqual(len(rat.data['f3']), len(rat.data['Value']))
         self.assertEqual(rat.data['f3'][0], '')
@@ -132,7 +132,6 @@ class TestRATClasses(TestCase):
         self.assertTrue(rat.remove_column('data_assessment')[0])
         self.assertEqual(len(rat.keys), 15)
         self.assertEqual(len(rat.keys), len(rat.fields))
-
 
     def test_insert_column_dbf(self):
 
@@ -225,13 +224,28 @@ class TestRATClasses(TestCase):
         self.assertTrue(rat.set_color(1, QColor(10, 20, 30, 120)))
         self.assertEqual(rat.get_color(1), QColor(10, 20, 30, 120))
 
+    def test_field_name(self):
+
+        rat = get_rat(self.raster_layer_dbf, 1)
+
+        usages = []
+        for field in rat.fields.values():
+            if field.usage not in usages:
+                usages.append(field.usage)
+                self.assertEqual(rat.field_name(field.usage), field.name)
+
+        self.assertEqual(rat.field_name(gdal.GFU_AlphaMax), '')
+        self.assertEqual(rat.field_name(gdal.GFU_RedMax), '')
+        self.assertEqual(rat.field_name(gdal.GFU_RedMin), '')
+
     def test_update_color_from_raster(self):
 
         rat = get_rat(self.raster_layer_dbf, 1)
         self.assertTrue(rat.has_color)
         rat_classify(self.raster_layer_dbf, 1, rat, 'EVT_NAME')
 
-        color_map = {klass.value: klass.color for klass in self.raster_layer_dbf.renderer().classes()}
+        color_map = {
+            klass.value: klass.color for klass in self.raster_layer_dbf.renderer().classes()}
 
         # Remove color
         self.assertTrue(rat.remove_color_fields())
@@ -249,8 +263,11 @@ class TestRATClasses(TestCase):
         self.assertTrue(rat.update_colors_from_raster(self.raster_layer_dbf))
 
         value_column = rat.value_columns[0]
+        self.assertEqual(value_column, rat.field_name(gdal.GFU_MinMax))
+
         for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
-            self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index], color_map[rat.data[value_column][row_index]])
+            self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index],
+                             color_map[rat.data[value_column][row_index]])
 
     def test_update_color_from_raster_athematic(self):
 
@@ -277,13 +294,15 @@ class TestRATClasses(TestCase):
             self.assertEqual(color, QColor(Qt.black))
 
         # Update color from raster
-        self.assertTrue(rat.update_colors_from_raster(self.raster_layer_athematic))
+        self.assertTrue(rat.update_colors_from_raster(
+            self.raster_layer_athematic))
 
-        value_column = rat.value_columns[0]
+        value_column = rat.value_columns[1]
+        self.assertEqual(value_column, rat.field_name(gdal.GFU_Max))
+
         for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
             self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index],
                              color_map[rat.data[value_column][row_index]])
-
 
     def test_add_remove_row(self):
 
@@ -291,6 +310,7 @@ class TestRATClasses(TestCase):
 
             rat = get_rat(raster_layer, 1)
             value_column = rat.value_columns[0]
+            self.assertEqual(value_column, rat.field_name(gdal.GFU_MinMax))
 
             self.assertNotEqual(rat.data[value_column][-1], 0)
             row_count = len(rat.data[value_column])
@@ -319,7 +339,7 @@ class TestRATClasses(TestCase):
             # Invalid ranges
             last = len(rat.data[value_column])
             self.assertFalse(rat.insert_row(-1)[0])
-            self.assertFalse(rat.insert_row(last +1)[0])
+            self.assertFalse(rat.insert_row(last + 1)[0])
             self.assertFalse(rat.remove_row(-1)[0])
             self.assertFalse(rat.remove_row(last)[0])
 
@@ -346,7 +366,5 @@ class TestRATClasses(TestCase):
         self.assertEqual(rat.data['Red'], [111, 222, 123])
 
 
-
 if __name__ == '__main__':
     main()
-
