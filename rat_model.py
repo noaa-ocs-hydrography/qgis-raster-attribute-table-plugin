@@ -180,7 +180,7 @@ class RATModel(QAbstractTableModel):
         else:
             usage = self.rat.fields[field_name].usage
             description = self.getUsageDescription(usage)
-            data_type = self.rat.fields[field_name].usage
+            data_type = self.rat.fields[field_name].type
             type_name = data_type_name(data_type)
 
             return QCoreApplication.translate('RAT', f"""
@@ -236,11 +236,8 @@ class RATModel(QAbstractTableModel):
         """
 
         assert isinstance(field, RATField)
-        rat_index = index - 1 if self.rat.has_color else index
         self.beginInsertColumns(QModelIndex(), index, index)
-        result, error_message = self.rat.insert_column(rat_index, field)
-        if result:
-            self.insertColumn(index, QModelIndex())
+        result, error_message = self.rat.insert_column(index, field)
         self.endInsertColumns()
         return result, error_message
 
@@ -256,8 +253,6 @@ class RATModel(QAbstractTableModel):
         column_name = self.headers[index]
         self.beginRemoveColumns(QModelIndex(), index, index)
         result, error_message = self.rat.remove_column(column_name)
-        if result:
-            self.removeColumn(index, QModelIndex())
         self.endRemoveColumns()
         return result, error_message
 
@@ -271,7 +266,8 @@ class RATModel(QAbstractTableModel):
         if not self.has_color:
             return False
 
-        color_fields = [field.name for field in self.rat.fields.values() if field.is_color]
+        color_fields = [
+            field.name for field in self.rat.fields.values() if field.is_color]
         assert len(color_fields) > 0
 
         # Remove actual color fields
@@ -296,7 +292,8 @@ class RATModel(QAbstractTableModel):
         self.beginResetModel()
         result, error_message = self.rat.insert_color_fields(column)
         if not result:
-            rat_log('Error inserting color columns: %s' % error_message, Qgis.Warning)
+            rat_log('Error inserting color columns: %s' %
+                    error_message, Qgis.Warning)
         self.endResetModel()
 
         return result
@@ -310,14 +307,17 @@ class RATModel(QAbstractTableModel):
         :rtype: bool
         """
 
-        assert row >= 0 and row <= self.rowCount(QModelIndex()), f'Out of range {row}'
+        assert row >= 0 and row <= self.rowCount(
+            QModelIndex()), f'Out of range {row}'
         self.beginInsertRows(QModelIndex(), row, row)
         result, error_message = self.rat.insert_row(row)
         if not result:
-            rat_log('Error inserting a new row: %s' % error_message, Qgis.Warning)
+            rat_log('Error inserting a new row: %s' %
+                    error_message, Qgis.Warning)
         self.endInsertRows()
         row_count = self.rowCount(QModelIndex())
-        rat_log(f'Row {row} inserted successfully, row count is: {row_count}', Qgis.Info)
+        rat_log(
+            f'Row {row} inserted successfully, row count is: {row_count}', Qgis.Info)
         return result
 
     def remove_row(self, row) -> bool:
@@ -329,13 +329,14 @@ class RATModel(QAbstractTableModel):
         :rtype: bool
         """
 
-        assert row >= 0 and row < self.rowCount(QModelIndex()), f'Out of range {row}'
+        assert row >= 0 and row < self.rowCount(
+            QModelIndex()), f'Out of range {row}'
         self.beginRemoveRows(QModelIndex(), row, row)
         result, error_message = self.rat.remove_row(row)
         if not result:
             rat_log('Error removing a row: %s' % error_message, Qgis.Warning)
         self.endRemoveRows()
         row_count = self.rowCount(QModelIndex())
-        rat_log(f'Row {row} removed successfully, row count is: {row_count}', Qgis.Info)
+        rat_log(
+            f'Row {row} removed successfully, row count is: {row_count}', Qgis.Info)
         return result
-

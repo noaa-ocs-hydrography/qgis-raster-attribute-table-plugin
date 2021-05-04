@@ -24,7 +24,7 @@ from qgis.core import Qgis, QgsApplication, QgsSettings
 
 class AboutDialog(QDialog):
 
-    def __init__(self, current_row, iface=None):
+    def __init__(self, iface=None):
 
         QDialog.__init__(self)
         # Set up the user interface from Designer.

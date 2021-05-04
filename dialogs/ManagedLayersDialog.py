@@ -18,13 +18,15 @@ from osgeo import gdal
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication, QByteArray
-from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QDialogButtonBox
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QDialogButtonBox, QListWidgetItem
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
 
+from ..rat_utils import managed_layers
+
 class ManagedLayersDialog(QDialog):
 
-    def __init__(self, current_row, iface=None):
+    def __init__(self, iface=None):
 
         QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -32,6 +34,9 @@ class ManagedLayersDialog(QDialog):
             __file__), 'Ui_ManagedLayersDialog.ui')
         uic.loadUi(ui_path, self)
 
+        for layer in managed_layers():
+            item = QListWidgetItem(layer.name())
+            self.mManagedLayers.addItem(item)
         try:
             self.restoreGeometry(QgsSettings().value(
                 "RATManagedLayers/geometry", None, QByteArray, QgsSettings.Plugins))

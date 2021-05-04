@@ -14,6 +14,7 @@ __copyright__ = 'Copyright 2021, ItOpen'
 
 from osgeo import gdal
 import os
+import html
 from qgis.PyQt.QtCore import QVariant, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (
@@ -56,7 +57,7 @@ class RATField:
         self.type = type
 
     @property
-    def qgis_type(self):
+    def qgis_type(self) -> QVariant.Type:
         """Returns the QVariant type of the field
 
         :raises Exception: in case of unhandled type
@@ -273,6 +274,7 @@ class RAT:
 
                 column_index = 0
 
+
                 for field_name, field in self.fields.items():
                     values = self.data[field_name]
                     func = getattr(rat, 'SetValueAs%s' % type_map[field.type])
@@ -280,7 +282,8 @@ class RAT:
                     for row_index in range(len(values)):
                         rat_log('Writing RAT value as %s, (%s, %s) %s' %
                                 (type_map[field.type], row_index, column_index, values[row_index]))
-                        func(row_index, column_index, values[row_index])
+                        value = html.escape(values[row_index]) if field.type == gdal.GFT_String else values[row_index]
+                        func(row_index, column_index, value)
 
                     column_index += 1
 
@@ -459,7 +462,7 @@ class RAT:
         return True, None
 
     def update_colors_from_raster(self, raster_layer) -> bool:
-        """Updates colors from raster
+        """Updates RAT colors from raster
 
         :param raster_layer: raster layer
         :type raster_layer: QgsRasterLayer
@@ -467,30 +470,34 @@ class RAT:
         :rtype: bool
         """
 
+        if not self.isValid():
+            return False
+
         result = False
 
         if self.has_color and raster_layer.isValid():
 
-            # Thematic
-            if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
+            red_column = [field.name for field in self.fields.values(
+            ) if field.usage == gdal.GFU_Red][0]
+            green_column = [field.name for field in self.fields.values(
+            ) if field.usage == gdal.GFU_Green][0]
+            blue_column = [field.name for field in self.fields.values(
+            ) if field.usage == gdal.GFU_Blue][0]
+            try:
+                alpha_column = [field.name for field in self.fields.values(
+                ) if field.usage == gdal.GFU_Alpha][0]
+            except:
+                alpha_column = None
 
-                red_column = [field.name for field in self.fields.values(
-                ) if field.usage == gdal.GFU_Red][0]
-                green_column = [field.name for field in self.fields.values(
-                ) if field.usage == gdal.GFU_Green][0]
-                blue_column = [field.name for field in self.fields.values(
-                ) if field.usage == gdal.GFU_Blue][0]
-                try:
-                    alpha_column = [field.name for field in self.fields.values(
-                    ) if field.usage == gdal.GFU_Alpha][0]
-                except:
-                    alpha_column = None
+            color_map = {}
 
-                color_map = {}
-                for klass in raster_layer.renderer().classes():
+            def _set_colors(value_column, classes):
+                """Local helper to set colors"""
+
+                result = False
+
+                for klass in classes:
                     color_map[klass.value] = klass.color
-
-                value_column = self.value_columns[0]
 
                 for row_index in range(len(self.data[value_column])):
                     value = self.data[value_column][row_index]
@@ -509,10 +516,30 @@ class RAT:
 
                 return result
 
+            # Thematic
+            if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
+
+                classes = raster_layer.renderer().classes()
+                value_column = self.value_columns[0]
+                return _set_colors(value_column, classes)
+
+            # Athematic
             elif isinstance(raster_layer.renderer(), QgsSingleBandPseudoColorRenderer):
-               pass
+
+                shader = raster_layer.renderer().shader()
+                if shader:
+                    colorRampShaderFcn = shader.rasterShaderFunction()
+                    if colorRampShaderFcn:
+                        classes = colorRampShaderFcn.colorRampItemList()
+                        # Get max column
+                        value_column = [field.name for field in self.fields.values(
+                        ) if field.usage == gdal.GFU_Max][0]
+                        return _set_colors(value_column, classes)
+
+                rat_log(f'Error retrieving classes from shader on layer {raster_layer.name()}', Qgis.Critical)
+
             else:
-                rat_log('Unsupported layer renderer for layer %s' % raster_layer, Qgis.Critical)
+                rat_log(f'Unsupported layer renderer for layer  {raster_layer.name()}', Qgis.Critical)
 
         return result
 

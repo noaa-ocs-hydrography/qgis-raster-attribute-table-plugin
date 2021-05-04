@@ -13,6 +13,7 @@ __date__ = '2021-04-19'
 __copyright__ = 'Copyright 2021, ItOpen'
 
 import os
+import html
 from osgeo import gdal
 from qgis.PyQt.QtCore import QFileInfo, QVariant, QCoreApplication
 from qgis.PyQt.QtGui import QColor
@@ -33,11 +34,11 @@ from qgis.core import (
 )
 
 try:
-    from .rat_constants import RAT_COLOR_HEADER_NAME
+    from .rat_constants import RAT_COLOR_HEADER_NAME, RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
     from .rat_classes import RATField, RAT
     from .rat_log import rat_log
 except ImportError:
-    from rat_constants import RAT_COLOR_HEADER_NAME
+    from rat_constants import RAT_COLOR_HEADER_NAME, RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
     from rat_classes import RATField, RAT
     from rat_log import rat_log
 
@@ -88,7 +89,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                                 rat.GetValueAsDouble(r, c))
                         else:
                             values[headers[c]].append(
-                                rat.GetValueAsString(r, c))
+                                html.unescape(rat.GetValueAsString(r, c)))
 
             path = raster_layer.source() + '.aux.xml'
 
@@ -194,7 +195,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     :type ramp: QgsColorRamp, optional
     :param feedback: QGIS feedback object, defaults to QgsRasterBlockFeedback()
     :type feedback: QgsRasterBlockFeedback, optional
-    :return: unique row indexes for legend items
+    :return: unique row indexes for legend items (1-based)
     :rtype: list
     """
 
@@ -240,15 +241,17 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         min_value_column, max_value_column = rat.value_columns
 
         # Collect unique values and colors from criteria
+        row_index = 1
         unique_labels = []
         for index in range(len(labels)):
             label = labels[index]
             if label not in unique_labels:
                 unique_labels.append(label)
-                unique_indexes.append(index)
+                unique_indexes.append(row_index)
                 # Collect color
                 if has_color:
                     label_colors[label] = rat.data[RAT_COLOR_HEADER_NAME][index]
+            row_index += 1
 
         # Assign colors from random ramp
         if not has_color:
@@ -276,6 +279,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         colorRampShaderFcn = QgsColorRampShader(
             minValue, maxValue, ramp)
         colorRampShaderFcn.setClip(True)
+        colorRampShaderFcn.setColorRampType(QgsColorRampShader.Discrete)
 
         items = []
         row = 0
@@ -288,7 +292,8 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         try:  # for older QGIS
             colorRampShaderFcn.legendSettings().setUseContinuousLegend(False)
         except AttributeError:
-            rat_log('QgsColorRampShader.legendSettings().setUseContinuousLegend() is not supported on ths QGIS version.', Qgis.Warning)
+            rat_log(
+                'QgsColorRampShader.legendSettings().setUseContinuousLegend() is not supported on ths QGIS version.', Qgis.Warning)
         shader.setRasterShaderFunction(colorRampShaderFcn)
         renderer = QgsSingleBandPseudoColorRenderer(
             raster_layer.dataProvider(), band, shader)
@@ -345,6 +350,8 @@ def deduplicate_legend_entries(iface, raster_layer, criteria, unique_class_row_i
                 unique_class_row_indexes.append(idx)
             idx += 1
 
+    rat_log(
+        f'Deduplicating legend entries for layer {raster_layer.name()}: {unique_class_row_indexes}')
     QgsMapLayerLegendUtils.setLegendNodeOrder(
         node, unique_class_row_indexes)
     QgsMapLayerLegendUtils.setLegendNodeUserLabel(
@@ -498,7 +505,8 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
         stats = raster_layer.dataProvider().bandStatistics(
             band, QgsRasterBandStats.Min | QgsRasterBandStats.Max, raster_layer.extent(), 0)
 
-        min_value = stats.minimumValue
+        # Set as min float value
+        min_value = -3.40282e+38
         # unused: max_value = stats.maximumValue
 
     else:
@@ -537,12 +545,14 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
 
         data[RAT_COLOR_HEADER_NAME].append(klass.color)
 
+        value = klass.value if klass.value != float('inf') else 3.40282e+38
+
         if is_range:
             data['Value Min'].append(min_value)
-            data['Value Max'].append(klass.value)
-            min_value = klass.value
+            data['Value Max'].append(value)
+            min_value = value
         else:
-            data['Value'].append(klass.value)
+            data['Value'].append(value)
 
         if has_histogram:
             data['Count'].append(histogram_values[i])
@@ -582,7 +592,7 @@ def rat_column_info() -> dict:
 
     return {
         gdal.GFU_Generic: {
-            'name': QCoreApplication.translate('RAT', 'General purpose field.'),
+            'name': QCoreApplication.translate('RAT', 'General purpose field'),
             'unique': False,
             'required': False,
             'is_color': False,
@@ -742,3 +752,20 @@ def rat_supported_column_info() -> dict:
     """Return information about supported raster column types"""
 
     return {usage: info for usage, info in rat_column_info().items() if info['supported']}
+
+
+def managed_layers() -> list:
+    """Returns a (possibly empty) list of raster layers managed by the plugin
+
+    :return: list of raster layers managed by the plugin
+    :rtype: list
+    """
+
+    managed = []
+
+    for layer in QgsProject.instance().mapLayers().values():
+
+        if layer.customProperty(RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA):
+            managed.append(layer)
+
+    return managed

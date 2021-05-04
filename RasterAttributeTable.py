@@ -25,7 +25,7 @@ from qgis.core import (QgsApplication, QgsMapLayer, QgsMapLayerType,
                        QgsMessageLog, QgsProject, Qgis)
 from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSlot, QObject
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton, QMenu
 
 from .dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from .dialogs.CreateRasterAttributeTableDialog import CreateRasterAttributeTableDialog
@@ -69,10 +69,13 @@ class RasterAttributeTable(QObject):
             self.showManagedLayersDialog)
         self.about_action.triggered.connect(self.showAboutDialog)
 
-        self.iface.addPluginToMenu(QCoreApplication.translate(
-            'RAT', "Raster Attribute Table"), self.about_action)
-        self.iface.addPluginToMenu(QCoreApplication.translate(
-            'RAT', "Raster Attribute Table"), self.managed_rasters_action)
+        self.menu = QMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"))
+        self.menu.setIcon(
+            QIcon(os.path.join(os.path.dirname(__file__), "icons", "rat_icon.svg")))
+        self.menu.addActions(
+            [self.managed_rasters_action, self.about_action])
+        self.iface.pluginMenu().addMenu(self.menu)
 
         rat_log("GUI loaded")
 
@@ -80,10 +83,11 @@ class RasterAttributeTable(QObject):
 
         self.iface.removeCustomActionForLayerType(self.open_rat_action)
         self.iface.removeCustomActionForLayerType(self.create_rat_action)
-        self.iface.removePluginMenu(QCoreApplication.translate(
-            'RAT', "Raster Attribute Table"), self.about_action)
+
         self.iface.removePluginMenu(QCoreApplication.translate(
             'RAT', "Raster Attribute Table"), self.managed_rasters_action)
+        self.iface.removePluginMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"), self.about_action)
 
         rat_log("GUI unloaded")
 
@@ -151,8 +155,13 @@ class RasterAttributeTable(QObject):
         self.updateRatActions(raster_layer)
         criteria = raster_layer.customProperty(
             RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, False)
-        if criteria and has_rat(raster_layer):
+
+        try:
             raster_layer.rendererChanged.disconnect(self.rendererChanged)
+        except:
+            pass
+
+        if criteria and has_rat(raster_layer):
             if homogenize_colors(raster_layer):
                 self.iface.messageBar().pushMessage(
                     QCoreApplication.translate('RAT', "Style reset"),
@@ -179,12 +188,12 @@ class RasterAttributeTable(QObject):
         self.dlg = RasterAttributeTableDialog(layer, self.iface)
         self.dlg.show()
 
-    def showAboutDialog(self, checked=False, layer=None):
+    def showAboutDialog(self):
 
-        dlg = AboutDialog(layer, self.iface)
+        dlg = AboutDialog(self.iface)
         dlg.exec_()
 
-    def showManagedLayersDialog(self, checked=False, layer=None):
+    def showManagedLayersDialog(self):
 
-        dlg = ManagedLayersDialog(layer, self.iface)
+        dlg = ManagedLayersDialog(self.iface)
         dlg.exec_()

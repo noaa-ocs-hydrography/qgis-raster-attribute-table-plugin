@@ -32,7 +32,15 @@ from qgis.core import (
 
 from qgis.PyQt.QtCore import QTemporaryDir
 from qgis.PyQt.QtGui import QColor
-from rat_utils import get_rat, rat_classify, has_rat, can_create_rat, create_rat_from_raster
+from rat_utils import (
+    get_rat,
+    rat_classify,
+    has_rat,
+    can_create_rat,
+    create_rat_from_raster,
+    data_type_name,
+)
+
 from rat_constants import RAT_COLOR_HEADER_NAME
 
 
@@ -345,7 +353,7 @@ class RatUtilsTest(TestCase):
 
         # Round trip tests
         unique_indexes = rat_classify(raster_layer, band, rat, 'Class', ramp=None)
-        self.assertEqual(unique_indexes, [0, 1, 2])
+        self.assertEqual(unique_indexes, [1, 2, 3])
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
             tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
         self.assertTrue(rat2.isValid())
@@ -353,13 +361,13 @@ class RatUtilsTest(TestCase):
         self.assertEqual(rat2.field_usages, {
                          gdal.GFU_Name, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha})
         self.assertEqual(
-            rat2.data['Value Min'], [-9.999999778196308e+22, 3000000000000.0, 1e+20])
+            rat2.data['Value Min'], [-3.40282e+38, 3000000000000.0, 1e+20])
         self.assertEqual(
             rat2.data['Value Max'], [3000000000000.0, 1e+20, 5e+25])
 
         # Reclass on class 2
         unique_indexes = rat_classify(raster_layer, band, rat, 'Class2', ramp=None)
-        self.assertEqual(unique_indexes, [0, 1])
+        self.assertEqual(unique_indexes, [1, 2])
 
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
             tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
@@ -368,10 +376,34 @@ class RatUtilsTest(TestCase):
         self.assertEqual(rat2.field_usages, {
                          gdal.GFU_Name, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha})
         self.assertEqual(
-            rat2.data['Value Min'], [-9.999999778196308e+22, 3000000000000.0, 1e+20])
+            rat2.data['Value Min'], [-3.40282e+38, 3000000000000.0, 1e+20])
         self.assertEqual(
             rat2.data['Value Max'], [3000000000000.0, 1e+20, 5e+25])
 
+    def test_classify_athematic(self):
+        """Test issue with athematic RAT classification dedup"""
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'band1_float32_noct_epsg4326.tif'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'band1_float32_noct_epsg4326.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'band1_float32_noct_epsg4326.tif'), 'rat_test', 'gdal')
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        unique_indexes = rat_classify(raster_layer, 1, rat, 'class2')
+        self.assertEqual(unique_indexes, [1, 2, 3])
+
+
+    def test_data_type_name(self):
+
+        self.assertEqual(data_type_name(gdal.GFT_Real), 'Floating point')
+        self.assertEqual(data_type_name(gdal.GFT_Integer), 'Integer')
+        self.assertEqual(data_type_name(gdal.GFT_String), 'String')
+        self.assertEqual(data_type_name(-100), 'String')
+        self.assertEqual(data_type_name(100), 'String')
 
 if __name__ == '__main__':
     main()

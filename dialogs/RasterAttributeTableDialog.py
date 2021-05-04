@@ -197,6 +197,12 @@ class RasterAttributeTableDialog(QDialog):
         # List allowed usages
         allowed_usages = self.allowedAddedUsages()
 
+        # Set insertion point
+        col = self.proxyModel.mapToSource(
+            self.mRATView.selectionModel().currentIndex()).column()
+        header = self.model.headers[col]
+        dlg.mColumn.setCurrentIndex(dlg.mColumn.findText(header))
+
         if not allowed_usages:
             if not self.model.has_color:
                 dlg.mColor.setChecked(True)
@@ -258,7 +264,7 @@ class RasterAttributeTableDialog(QDialog):
             elif usage == gdal.GFU_Name:
                 # Check if it's not the only one
                 names_count = len(
-                    [field for field in self.model.rat.fields if field.usage == gdal.GFU_Name])
+                    [field for field in self.model.rat.fields.values() if field.usage == gdal.GFU_Name])
                 if names_count > 1:
                     column_can_be_removed = True
         except Exception as ex:
@@ -353,7 +359,7 @@ class RasterAttributeTableDialog(QDialog):
             self.accept()
 
     def classify(self):
-        """Create a paletted/unique-value classification"""
+        """Create classification on the selected criteria"""
 
         if QMessageBox.question(None,
                                 QCoreApplication.translate(

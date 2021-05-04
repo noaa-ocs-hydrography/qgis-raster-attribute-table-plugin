@@ -42,6 +42,7 @@ class TestRATClasses(TestCase):
 
         del(self.raster_layer)
         del(self.raster_layer_dbf)
+        del(self.raster_layer_athematic)
 
     def setUp(self):
 
@@ -58,6 +59,10 @@ class TestRATClasses(TestCase):
         self.raster_layer_dbf = QgsRasterLayer(os.path.join(
             self.tmp_path, 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
         self.assertTrue(self.raster_layer_dbf.isValid())
+
+        self.raster_layer_athematic = QgsRasterLayer(os.path.join(
+            self.tmp_path, '2x2_1_BAND_FLOAT.tif'), 'rat_test', 'gdal')
+        self.assertTrue(self.raster_layer_athematic.isValid())
 
     def test_field_usages(self):
 
@@ -247,6 +252,39 @@ class TestRATClasses(TestCase):
         for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
             self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index], color_map[rat.data[value_column][row_index]])
 
+    def test_update_color_from_raster_athematic(self):
+
+        rat = get_rat(self.raster_layer_athematic, 1)
+        self.assertTrue(rat.has_color)
+        rat_classify(self.raster_layer_athematic, 1, rat, 'Class')
+
+        shader = self.raster_layer_athematic.renderer().shader()
+        colorRampShaderFcn = shader.rasterShaderFunction()
+        classes = classes = colorRampShaderFcn.colorRampItemList()
+
+        color_map = {klass.value: klass.color for klass in classes}
+
+        # Remove color
+        self.assertTrue(rat.remove_color_fields())
+        self.assertFalse(rat.has_color)
+
+        # Add color
+        result, error_message = rat.insert_color_fields(len(rat.keys)-1)
+        self.assertTrue(result, error_message)
+        self.assertTrue(rat.has_color)
+
+        for color in rat.data[RAT_COLOR_HEADER_NAME]:
+            self.assertEqual(color, QColor(Qt.black))
+
+        # Update color from raster
+        self.assertTrue(rat.update_colors_from_raster(self.raster_layer_athematic))
+
+        value_column = rat.value_columns[0]
+        for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
+            self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index],
+                             color_map[rat.data[value_column][row_index]])
+
+
     def test_add_remove_row(self):
 
         def _test(raster_layer):
@@ -290,16 +328,8 @@ class TestRATClasses(TestCase):
 
     def test_edit_rat(self):
 
-        tmp_dir = QTemporaryDir()
-
-        shutil.copy(os.path.join(os.path.dirname(
-            __file__), 'data', '2x2_2_BANDS_INT16.tif'), tmp_dir.path())
-
-        shutil.copy(os.path.join(os.path.dirname(
-            __file__), 'data', '2x2_2_BANDS_INT16.tif.aux.xml'), tmp_dir.path())
-
         raster_layer = QgsRasterLayer(os.path.join(
-            tmp_dir.path(), '2x2_2_BANDS_INT16.tif'), 'rat_test', 'gdal')
+            self.tmp_path, '2x2_2_BANDS_INT16.tif'), 'rat_test', 'gdal')
         self.assertTrue(raster_layer.isValid())
 
         band = 1

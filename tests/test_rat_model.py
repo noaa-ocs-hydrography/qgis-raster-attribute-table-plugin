@@ -62,12 +62,35 @@ class TestRATModel(TestCase):
         self.assertTrue(model.insert_column(3, field)[0])
         self.assertEqual(model.columnCount(
             QModelIndex()), column_count + 1)
+        self.assertEqual(model.headers.index('f1'), 3)
 
         # Error
         field = RATField('f1', gdal.GFU_Generic, gdal.GFT_String)
         self.assertFalse(model.insert_column(3, field)[0])
         self.assertEqual(model.columnCount(
             QModelIndex()), column_count + 1)
+
+    def test_insert_column_color(self):
+
+        rat = get_rat(self.raster_layer_color, 1)
+        self.assertTrue(rat.isValid())
+
+        model = RATModel(rat)
+        tester = QAbstractItemModelTester(
+            model, QAbstractItemModelTester.FailureReportingMode.Warning)
+        column_count = model.columnCount(QModelIndex())
+        field = RATField('f1', gdal.GFU_Generic, gdal.GFT_String)
+        self.assertTrue(model.insert_column(3, field)[0])
+        self.assertEqual(model.columnCount(
+            QModelIndex()), column_count + 1)
+        self.assertEqual(model.headers.index('f1'), 3)
+
+        # Error
+        field = RATField('f1', gdal.GFU_Generic, gdal.GFT_String)
+        self.assertFalse(model.insert_column(3, field)[0])
+        self.assertEqual(model.columnCount(
+            QModelIndex()), column_count + 1)
+
 
     def test_remove_column(self):
 
@@ -161,6 +184,20 @@ class TestRATModel(TestCase):
 
         _test(self.raster_layer)
         _test(self.raster_layer_color)
+
+    def test_header_tooltip(self):
+
+        rat = get_rat(self.raster_layer_color, 1)
+        model = RATModel(rat)
+        tooltip = model.getHeaderTooltip(1)
+        self.assertIn('<dt>Role</dt><dd>Class value(min=max)</dd>', tooltip)
+        self.assertIn('<dt>Type</dt><dd>Integer</dd>', tooltip)
+        tooltip = model.getHeaderTooltip(2)
+        self.assertIn('<dt>Role</dt><dd>Histogram pixel count</dd>', tooltip)
+        self.assertIn('<dt>Type</dt><dd>Integer</dd>', tooltip)
+        tooltip = model.getHeaderTooltip(3)
+        self.assertIn('<dt>Role</dt><dd>General purpose field</dd>', tooltip)
+        self.assertIn('<dt>Type</dt><dd>String</dd>', tooltip)
 
 
 if __name__ == '__main__':
