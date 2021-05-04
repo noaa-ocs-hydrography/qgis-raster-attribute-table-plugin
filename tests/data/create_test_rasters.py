@@ -10,6 +10,7 @@ directory specified as argument
 """
 
 
+from rat_classes import RAT, RATField
 __author__ = 'elpaso@itopen.it'
 __date__ = '2021-04-30'
 __copyright__ = 'Copyright 2021, ItOpen'
@@ -23,10 +24,10 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
                              os.pardir))
 
-from rat_classes import RAT, RATField
 
 if __name__ == '__main__':
 
+    # Create a 2x2 int raster
     dest = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(__file__)
 
     #  Initialize the Image Size
@@ -117,3 +118,59 @@ if __name__ == '__main__':
     rat = RAT(data, False, fields, os.path.join(
         dest, '2x2_2_BANDS_INT16.tif.aux.xml'))
     assert rat.save(2), 'Error saving RAT for band 2'
+
+    # Create a 2x2 single band float raster
+
+    #  Initialize the Image Size
+    image_size = (2, 2)
+
+    #  Create Each Channel
+    r_pixels = np.zeros((image_size), dtype=np.float)
+
+    r_pixels[0, 0] = -1E23
+    r_pixels[0, 1] = 2.345
+    r_pixels[1, 0] = 3.456E12
+    r_pixels[1, 1] = 4.567E23
+
+    # set geotransform
+    # create the 1-band raster file
+    dst_ds = gdal.GetDriverByName('GTiff').Create(
+        os.path.join(dest, '2x2_1_BAND_FLOAT.tif'), ny, nx, 1, gdal.GDT_Float32)
+
+    dst_ds.SetGeoTransform(geotransform)    # specify coords
+    srs = osr.SpatialReference()            # establish encoding
+    srs.ImportFromEPSG(3857)                # WGS84 lat/long
+    dst_ds.SetProjection(srs.ExportToWkt())  # export coords to file
+    dst_ds.GetRasterBand(1).WriteArray(r_pixels)   # write r-band to the raster
+
+    dst_ds.FlushCache()                     # write to disk
+    dst_ds = None
+
+    # Create RAT
+    fields = []
+    fields.append(RATField('Value Min', gdal.GFU_Min, gdal.GFT_Real))
+    fields.append(RATField('Value Max', gdal.GFU_Max, gdal.GFT_Real))
+    fields.append(RATField('Class', gdal.GFU_Name, gdal.GFT_String))
+    fields.append(RATField('Class2', gdal.GFU_Name, gdal.GFT_String))
+    fields.append(RATField('Class3', gdal.GFU_Generic, gdal.GFT_String))
+    fields.append(RATField('Red', gdal.GFU_Red, gdal.GFT_Integer))
+    fields.append(RATField('Green', gdal.GFU_Green, gdal.GFT_Integer))
+    fields.append(RATField('Blue', gdal.GFU_Blue, gdal.GFT_Integer))
+
+    fields = {field.name: field for field in fields}
+
+    data = {
+        'Value Min': [-1E25, 3E12, 1E20],
+        'Value Max': [3E12, 1E20, 5E25],
+        'Count': [1, 1, 2],
+        'Class': ['zero', 'one', 'two'],
+        'Class2': ['zero2', 'one2', 'zero2'],  # for classify test!
+        'Class3': ['zero3', 'one3', 'two3'],
+        'Red': [0, 100, 200],
+        'Green': [10, 20, 30],
+        'Blue': [100, 0, 50],
+    }
+
+    rat = RAT(data, False, fields, os.path.join(
+        dest, '2x2_1_BAND_FLOAT.tif.aux.xml'))
+    assert rat.save(1), 'Error saving RAT for band 1'

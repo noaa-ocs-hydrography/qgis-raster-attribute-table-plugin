@@ -19,12 +19,17 @@ from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     QgsVectorLayer,
     QgsPalettedRasterRenderer,
+    QgsSingleBandPseudoColorRenderer,
     QgsRasterBlockFeedback,
     QgsRandomColorRamp,
+    QgsColorRampShader,
+    QgsRasterShader,
+    QgsPresetSchemeColorRamp,
     QgsMessageLog,
     Qgis,
     QgsProject,
     QgsMapLayerLegendUtils,
+    QgsRasterBandStats,
 )
 
 try:
@@ -192,37 +197,101 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     :return: unique row indexes for legend items
     :rtype: list
     """
-    if ramp is None:
-        ramp = QgsRandomColorRamp()
-    classes = QgsPalettedRasterRenderer.classDataFromRaster(
-        raster_layer.dataProvider(), band, ramp, feedback)
+
     has_color = rat.has_color
-    # A valid RAT must have a value field
-    value_column_name = [field.name for field in rat.fields.values(
-    ) if field.usage == gdal.GFU_MinMax][0]
+    value_column_name = rat.value_columns[0]
     values = rat.data[value_column_name]
     labels = rat.data[criteria]
     label_colors = {}
     is_integer = isinstance(values[0], int)
     unique_indexes = []
 
-    row_index = 1
-    for klass in classes:
-        index = values.index(int(klass.value) if is_integer else klass.value)
-        klass.label = str(labels[index])
-        if klass.label not in label_colors:
-            unique_indexes.append(row_index)
-            if has_color:
-                label_colors[klass.label] = rat.data[RAT_COLOR_HEADER_NAME][index]
-            else:
-                label_colors[klass.label] = klass.color
-        klass.color = label_colors[klass.label]
-        row_index += 1
+    if rat.thematic_type == gdal.GRTT_THEMATIC:
 
-    # Use paletted
-    rat_log('Using paletted renderer')
-    renderer = QgsPalettedRasterRenderer(
-        raster_layer.dataProvider(), band, classes)
+        # Use paletted
+        rat_log('Using paletted renderer')
+
+        if ramp is None:
+            ramp = QgsRandomColorRamp()
+        classes = QgsPalettedRasterRenderer.classDataFromRaster(
+            raster_layer.dataProvider(), band, ramp, feedback)
+
+        row_index = 1
+        for klass in classes:
+            index = values.index(
+                int(klass.value) if is_integer else klass.value)
+            klass.label = str(labels[index])
+            if klass.label not in label_colors:
+                unique_indexes.append(row_index)
+                if has_color:
+                    label_colors[klass.label] = rat.data[RAT_COLOR_HEADER_NAME][index]
+                else:
+                    label_colors[klass.label] = klass.color
+            klass.color = label_colors[klass.label]
+            row_index += 1
+
+        renderer = QgsPalettedRasterRenderer(
+            raster_layer.dataProvider(), band, classes)
+
+    else:  # ranges
+
+        rat_log('Using singleband pseudocolor renderer')
+
+        min_value_column, max_value_column = rat.value_columns
+
+        # Collect unique values and colors from criteria
+        unique_labels = []
+        for index in range(len(labels)):
+            label = labels[index]
+            if label not in unique_labels:
+                unique_labels.append(label)
+                unique_indexes.append(index)
+                # Collect color
+                if has_color:
+                    label_colors[label] = rat.data[RAT_COLOR_HEADER_NAME][index]
+
+        # Assign colors from random ramp
+        if not has_color:
+            ramp = QgsRandomColorRamp()
+            ramp.setTotalColorCount(len(unique_labels))
+            i = 0
+            for index in unique_indexes:
+                label_colors[labels[index]] = ramp.color(ramp.value(i))
+                i += 1
+
+        # Create values for the ramp
+        # Collect colors for all classes
+        colors = []
+        for label in labels:
+            colors.append(label_colors[label])
+
+        ramp = QgsPresetSchemeColorRamp(colors)
+        minValue = min(rat.data[min_value_column])
+        maxValue = max(rat.data[max_value_column])
+
+        assert minValue < maxValue, "Min Value must be lower than Max Value"
+
+        shader = QgsRasterShader(minValue, maxValue)
+
+        colorRampShaderFcn = QgsColorRampShader(
+            minValue, maxValue, ramp)
+        colorRampShaderFcn.setClip(True)
+
+        items = []
+        row = 0
+        for label in labels:
+            items.append(QgsColorRampShader.ColorRampItem(
+                rat.data[max_value_column][row], label_colors[label], label))
+            row += 1
+
+        colorRampShaderFcn.setColorRampItemList(items)
+        try:  # for older QGIS
+            colorRampShaderFcn.legendSettings().setUseContinuousLegend(False)
+        except AttributeError:
+            rat_log('QgsColorRampShader.legendSettings().setUseContinuousLegend() is not supported on ths QGIS version.', Qgis.Warning)
+        shader.setRasterShaderFunction(colorRampShaderFcn)
+        renderer = QgsSingleBandPseudoColorRenderer(
+            raster_layer.dataProvider(), band, shader)
 
     raster_layer.setRenderer(renderer)
     raster_layer.triggerRepaint()
@@ -230,13 +299,13 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     return unique_indexes
 
 
-def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=None, expand=None):
+def deduplicate_legend_entries(iface, raster_layer, criteria, unique_class_row_indexes=None, expand=None):
     """Remove duplicate entries from layer legend.
 
     :param iface: QGIS interface
     :type iface: QgisInterface
-    :param layer: raster layer
-    :type layer: QgsRasterLayer
+    :param raster_layer: raster layer
+    :type raster_layer: QgsRasterLayer
     :param criteria: classification criteria: label for the legend band
     :type criteria: str
     :param unique_class_row_indexes: list of 1-indexed unique entries, defaults to None
@@ -248,14 +317,29 @@ def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=
     assert iface is not None
     model = iface.layerTreeView().layerTreeModel()
     root = QgsProject.instance().layerTreeRoot()
-    node = root.findLayer(layer.id())
+    node = root.findLayer(raster_layer.id())
 
     if unique_class_row_indexes is None:
         unique_class_row_indexes = [0]
-        renderer = layer.renderer()
+        renderer = raster_layer.renderer()
         unique_labels = []
         idx = 1
-        for klass in renderer.classes():
+
+        # Get classes from renderer
+        if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
+            classes = renderer.classes()
+        elif isinstance(raster_layer.renderer(), QgsSingleBandPseudoColorRenderer):
+            shader = raster_layer.renderer().shader()
+            if shader:
+                colorRampShaderFcn = shader.rasterShaderFunction()
+                if colorRampShaderFcn:
+                    classes = colorRampShaderFcn.colorRampItemList()
+        else:
+            rat_log('Unsupported renderer for layer %s' %
+                    raster_layer, Qgis.Critical)
+            return
+
+        for klass in classes:
             if klass.label not in unique_labels:
                 unique_labels.append(klass.label)
                 unique_class_row_indexes.append(idx)
@@ -270,38 +354,59 @@ def deduplicate_legend_entries(iface, layer, criteria, unique_class_row_indexes=
         node.setExpanded(True)
 
 
-def homogenize_colors(iface, raster_layer) -> bool:
-    """Assign the color of the first class to all other
-    classes having the same label.
+def homogenize_colors(raster_layer) -> bool:
+    """Loops through labels in order and assign the color of the first label
+    occourrence to all other classes having the same label.
 
-    :param iface: QGIS interface
-    :type iface: QgisInterface
     :param raster_layer: raster layer
     :type raster_layer: QgsRasterLayer
     :return: TRUE if the renderer has been reset
     :rtype: bool
     """
 
-    assert iface is not None
-    assert isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer)
-
-    if len(raster_layer.renderer().classes()) == 0:
-        return
-
-    unique_classes = {}
     require_changes = False
-    classes = raster_layer.renderer().classes()
-    for klass in classes:
-        if klass.label not in unique_classes:
-            unique_classes[klass.label] = klass.color
-        else:
-            klass.color = unique_classes[klass.label]
-            require_changes = True
+
+    if can_create_rat(raster_layer):
+
+        if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
+
+            color_map = {}
+            classes = raster_layer.renderer().classes()
+
+            for klass in classes:
+                if klass.label not in color_map:
+                    color_map[klass.label] = klass.color
+                elif klass.color != color_map[klass.label]:
+                    klass.color = color_map[klass.label]
+                    require_changes = True
+
+            if require_changes:
+                renderer = QgsPalettedRasterRenderer(
+                    raster_layer.dataProvider(), raster_layer.renderer().band(), classes)
+
+        elif isinstance(raster_layer.renderer(), QgsSingleBandPseudoColorRenderer):
+
+            shader = raster_layer.renderer().shader()
+
+            if shader:
+                colorRampShaderFcn = shader.rasterShaderFunction()
+                if colorRampShaderFcn:
+
+                    color_map = {}
+                    items = colorRampShaderFcn.colorRampItemList()
+
+                    for item in items:
+                        if item.label not in color_map:
+                            color_map[item.label] = item.color
+                        elif item.color != color_map[item.label]:
+                            item.color = color_map[item.label]
+                            require_changes = True
+
+                    if require_changes:
+                        colorRampShaderFcn.setColorRampItemList(items)
 
     if require_changes:
-        renderer = QgsPalettedRasterRenderer(
-            raster_layer.dataProvider(), raster_layer.renderer().band(), classes)
-        raster_layer.setRenderer(renderer)
+        # raster_layer.setRenderer(renderer)
         raster_layer.triggerRepaint()
 
     return require_changes
@@ -335,8 +440,7 @@ def can_create_rat(raster_layer) -> bool:
     :rtype: bool
     """
 
-    # TODO: handle singleband pseudocolor
-    return raster_layer.isValid() and isinstance(raster_layer.renderer(), (QgsPalettedRasterRenderer, ))
+    return raster_layer.isValid() and isinstance(raster_layer.renderer(), (QgsPalettedRasterRenderer, QgsSingleBandPseudoColorRenderer))
 
 
 def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlockFeedback()) -> RAT:
@@ -351,35 +455,70 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
     """
 
     if not can_create_rat(raster_layer):
-        return RAT({}, {}, '')
+        return RAT()
 
     renderer = raster_layer.renderer()
     band = renderer.band()
-    classes = renderer.classes()
+
+    is_range = False
+    has_histogram = True
+
+    if isinstance(renderer, QgsPalettedRasterRenderer):
+        classes = renderer.classes()
+    elif isinstance(renderer, QgsSingleBandPseudoColorRenderer):
+        shader = renderer.shader()
+        if not shader:
+            rat_log('Invalid shader for renderer: %s' % renderer)
+            return RAT()
+        func = shader.rasterShaderFunction()
+        classes = func.colorRampItemList()
+        is_range = True
+        has_histogram = False
+    else:
+        rat_log('Unsupported renderer: %s' % renderer)
+        return RAT()
 
     if len(classes) == 0:
-        return RAT({}, {}, '')
+        return RAT()
 
     is_real = isinstance(classes[0].value, float)
 
-    fields = {
-        'Value': RATField('Value', gdal.GFU_MinMax, gdal.GFT_Real if is_real else gdal.GFT_Integer),
-    }
+    # If we have a range we have no histogram and separate min/max
+    if is_range:
+        fields = {
+            'Value Min': RATField('Value Min', gdal.GFU_Min, gdal.GFT_Real if is_real else gdal.GFT_Integer),
+            'Value Max': RATField('Value Max', gdal.GFU_Max, gdal.GFT_Real if is_real else gdal.GFT_Integer),
+        }
+        data = {
+            RAT_COLOR_HEADER_NAME: [],
+            'Value Min': [],
+            'Value Max': [],
+        }
+        # Store min and max
+        stats = raster_layer.dataProvider().bandStatistics(
+            band, QgsRasterBandStats.Min | QgsRasterBandStats.Max, raster_layer.extent(), 0)
 
-    data = {
-        RAT_COLOR_HEADER_NAME: [],
-        'Value': []
-    }
+        min_value = stats.minimumValue
+        # unused: max_value = stats.maximumValue
 
-    histogram = raster_layer.dataProvider().histogram(band, feedback=feedback)
-    histogram_values = []
-    if histogram.valid:
-        fields['Count'] = RATField(
-            'Count', gdal.GFU_PixelCount, gdal.GFT_Integer)
-        data['Count'] = []
-        for val in histogram.histogramVector:
-            if val != 0:
-                histogram_values.append(val)
+    else:
+        fields = {
+            'Value': RATField('Value', gdal.GFU_MinMax, gdal.GFT_Real if is_real else gdal.GFT_Integer),
+        }
+        data = {
+            RAT_COLOR_HEADER_NAME: [],
+            'Value': []
+        }
+
+        histogram = raster_layer.dataProvider().histogram(band, feedback=feedback)
+        histogram_values = []
+        if histogram.valid:
+            fields['Count'] = RATField(
+                'Count', gdal.GFU_PixelCount, gdal.GFT_Integer)
+            data['Count'] = []
+            for val in histogram.histogramVector:
+                if val != 0:
+                    histogram_values.append(val)
 
     fields['Class'] = RATField('Class', gdal.GFU_Name, gdal.GFT_String)
     data['Class'] = []
@@ -394,10 +533,20 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
     data['A'] = []
 
     i = 0
-    for klass in renderer.classes():
+    for klass in classes:
+
         data[RAT_COLOR_HEADER_NAME].append(klass.color)
-        data['Value'].append(klass.value)
-        data['Count'].append(histogram_values[i])
+
+        if is_range:
+            data['Value Min'].append(min_value)
+            data['Value Max'].append(klass.value)
+            min_value = klass.value
+        else:
+            data['Value'].append(klass.value)
+
+        if has_histogram:
+            data['Count'].append(histogram_values[i])
+
         data['Class'].append(klass.label)
         data['R'].append(klass.color.red())
         data['G'].append(klass.color.green())
@@ -496,16 +645,13 @@ def rat_column_info() -> dict:
             'data_types': [gdal.GFT_Integer],
             'supported': True,
         },
-
-        # NOT YET SUPPORTED!!
-
         gdal.GFU_Min: {
             'name': QCoreApplication.translate('RAT', 'Class range minimum'),
             'unique': True,
             'required': False,
             'is_color': False,
             'data_types': [gdal.GFT_Integer, gdal.GFT_Real],
-            'supported': False,
+            'supported': True,
         },
         gdal.GFU_Max: {
             'name': QCoreApplication.translate('RAT', 'Class range maximum'),
@@ -513,8 +659,11 @@ def rat_column_info() -> dict:
             'required': False,
             'is_color': False,
             'data_types': [gdal.GFT_Integer, gdal.GFT_Real],
-            'supported': False,
+            'supported': True,
         },
+
+        # NOT YET SUPPORTED!!
+
         gdal.GFU_RedMin: {
             'name': QCoreApplication.translate('RAT', 'Color Range Red Minimum'),
             'unique': True,

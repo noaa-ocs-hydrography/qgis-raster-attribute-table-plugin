@@ -214,7 +214,7 @@ class RATModel(QAbstractTableModel):
     def rowCount(self, index, parent=QModelIndex()):
         if index.isValid():
             return 0
-        return len(self.rat.data[self.rat.value_column])
+        return self.rat.row_count
 
     def columnCount(self, index, parent=QModelIndex()):
         if index.isValid():

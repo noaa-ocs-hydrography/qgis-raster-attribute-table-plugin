@@ -14,6 +14,7 @@ __copyright__ = 'Copyright 2021, ItOpen'
 
 import os
 import shutil
+from osgeo import gdal
 from unittest import TestCase, main, skipIf
 
 from qgis.core import (
@@ -21,11 +22,16 @@ from qgis.core import (
     QgsRasterLayer,
     QgsSingleBandPseudoColorRenderer,
     QgsPalettedRasterRenderer,
+    QgsPresetSchemeColorRamp,
     QgsRandomColorRamp,
+    QgsColorRampShader,
+    QgsRasterShader,
+    QgsRasterBandStats,
     QgsProject,
 )
 
 from qgis.PyQt.QtCore import QTemporaryDir
+from qgis.PyQt.QtGui import QColor
 from rat_utils import get_rat, rat_classify, has_rat, can_create_rat, create_rat_from_raster
 from rat_constants import RAT_COLOR_HEADER_NAME
 
@@ -43,13 +49,14 @@ class RatUtilsTest(TestCase):
 
         cls.qgs.exitQgis()
 
-    def test_embedded_rat(self):
+    def test_xml_rat(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
         self.assertTrue(raster_layer.isValid())
 
         rat = get_rat(raster_layer, 1)
+        self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
         self.assertFalse(rat.is_sidecar)
         self.assertEqual(list(rat.keys), ['Value',
                                           'Count',
@@ -79,6 +86,7 @@ class RatUtilsTest(TestCase):
         self.assertTrue(raster_layer.isValid())
 
         rat = get_rat(raster_layer, 1)
+        self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
         self.assertIsNotNone(rat.path)
         self.assertIn('ExistingVegetationTypes_sample.img.vat.dbf', rat.path)
         self.assertTrue(rat.is_sidecar)
@@ -107,6 +115,8 @@ class RatUtilsTest(TestCase):
 
         # Test RED, GREEN, BLUE
         rat = get_rat(raster_layer, 1, ('RED', 'GREEN', 'BLUE'))
+        self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
+
         self.assertTrue(rat.is_sidecar)
         self.assertEqual(rat.keys, [
             'VALUE',
@@ -305,6 +315,62 @@ class RatUtilsTest(TestCase):
 
         _test(True)
         _test(False)
+
+    def test_athematic_rat(self):
+        """Test RAT from single band with range values"""
+
+        tmp_dir = QTemporaryDir()
+
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_1_BAND_FLOAT.tif'), tmp_dir.path())
+
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_1_BAND_FLOAT.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), '2x2_1_BAND_FLOAT.tif'), 'rat_test', 'gdal')
+
+        band = 1
+
+        rat = get_rat(raster_layer, band)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.thematic_type, gdal.GRTT_ATHEMATIC)
+        self.assertEqual(rat.value_columns, ['Value Min', 'Value Max'])
+        self.assertEqual(rat.field_usages, {
+                         gdal.GFU_Generic, gdal.GFU_Name, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue})
+        self.assertEqual(rat.data[rat.value_columns[0]],
+                         [-1e+25, 3000000000000.0, 1e+20])
+        self.assertEqual(rat.data[rat.value_columns[1]], [
+                         3000000000000.0, 1e+20, 5e+25])
+
+        # Round trip tests
+        unique_indexes = rat_classify(raster_layer, band, rat, 'Class', ramp=None)
+        self.assertEqual(unique_indexes, [0, 1, 2])
+        rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
+            tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
+        self.assertTrue(rat2.isValid())
+        # Generic (Class3) is gone
+        self.assertEqual(rat2.field_usages, {
+                         gdal.GFU_Name, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha})
+        self.assertEqual(
+            rat2.data['Value Min'], [-9.999999778196308e+22, 3000000000000.0, 1e+20])
+        self.assertEqual(
+            rat2.data['Value Max'], [3000000000000.0, 1e+20, 5e+25])
+
+        # Reclass on class 2
+        unique_indexes = rat_classify(raster_layer, band, rat, 'Class2', ramp=None)
+        self.assertEqual(unique_indexes, [0, 1])
+
+        rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
+            tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
+        self.assertTrue(rat2.isValid())
+        # Generic (Class3) is gone
+        self.assertEqual(rat2.field_usages, {
+                         gdal.GFU_Name, gdal.GFU_Min, gdal.GFU_Max, gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha})
+        self.assertEqual(
+            rat2.data['Value Min'], [-9.999999778196308e+22, 3000000000000.0, 1e+20])
+        self.assertEqual(
+            rat2.data['Value Max'], [3000000000000.0, 1e+20, 5e+25])
 
 
 if __name__ == '__main__':

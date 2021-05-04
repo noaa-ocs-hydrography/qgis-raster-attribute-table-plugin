@@ -29,6 +29,8 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton
 
 from .dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from .dialogs.CreateRasterAttributeTableDialog import CreateRasterAttributeTableDialog
+from .dialogs.AboutDialog import AboutDialog
+from .dialogs.ManagedLayersDialog import ManagedLayersDialog
 from .rat_utils import has_rat, can_create_rat, deduplicate_legend_entries, homogenize_colors
 from .rat_log import rat_log
 from .rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA
@@ -45,6 +47,10 @@ class RasterAttributeTable(QObject):
             QgsApplication.getThemeIcon("/mActionOpenTable.svg"), QCoreApplication.translate("RAT", "&Open Attribute Table"))
         self.create_rat_action = QAction(
             QgsApplication.getThemeIcon("/mActionAddTable.svg"), QCoreApplication.translate("RAT", "&New Attribute Table"))
+        self.managed_rasters_action = QAction(
+            QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'rat_icon.svg')), QCoreApplication.translate("RAT", "Managed Layers"))
+        self.about_action = QAction(QgsApplication.getThemeIcon("/mActionHelpContents.svg"), QCoreApplication.translate("RAT", "About RAT Plugin"))
+
         rat_log("Init completed")
 
     def initGui(self):
@@ -59,6 +65,14 @@ class RasterAttributeTable(QObject):
 
         self.open_rat_action.triggered.connect(self.showAttributeTable)
         self.create_rat_action.triggered.connect(self.showCreateRatDialog)
+        self.managed_rasters_action.triggered.connect(
+            self.showManagedLayersDialog)
+        self.about_action.triggered.connect(self.showAboutDialog)
+
+        self.iface.addPluginToMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"), self.about_action)
+        self.iface.addPluginToMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"), self.managed_rasters_action)
 
         rat_log("GUI loaded")
 
@@ -66,6 +80,11 @@ class RasterAttributeTable(QObject):
 
         self.iface.removeCustomActionForLayerType(self.open_rat_action)
         self.iface.removeCustomActionForLayerType(self.create_rat_action)
+        self.iface.removePluginMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"), self.about_action)
+        self.iface.removePluginMenu(QCoreApplication.translate(
+            'RAT', "Raster Attribute Table"), self.managed_rasters_action)
+
         rat_log("GUI unloaded")
 
     @pyqtSlot(QgsMapLayer)
@@ -134,7 +153,7 @@ class RasterAttributeTable(QObject):
             RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, False)
         if criteria and has_rat(raster_layer):
             raster_layer.rendererChanged.disconnect(self.rendererChanged)
-            if homogenize_colors(self.iface, raster_layer):
+            if homogenize_colors(raster_layer):
                 self.iface.messageBar().pushMessage(
                     QCoreApplication.translate('RAT', "Style reset"),
                     QCoreApplication.translate('RAT', "The layer style is managed by the RAT plugin: colors have been homogenized to match the first class in the classification group."), level=Qgis.Info)
@@ -147,14 +166,25 @@ class RasterAttributeTable(QObject):
         if layer is None:
             layer = self.iface.activeLayer()
 
-        self.create_dlg = CreateRasterAttributeTableDialog(layer, self.iface)
-        self.create_dlg.ratCreated.connect(self.notifyUserOnRatAvailable)
-        self.create_dlg.ratCreated.connect(self.updateRatActions)
-        self.create_dlg.exec_()
+        create_dlg = CreateRasterAttributeTableDialog(layer, self.iface)
+        create_dlg.ratCreated.connect(self.notifyUserOnRatAvailable)
+        create_dlg.ratCreated.connect(self.updateRatActions)
+        create_dlg.exec_()
 
     def showAttributeTable(self, checked=False, layer=None):
 
         if layer is None:
             layer = self.iface.activeLayer()
+
         self.dlg = RasterAttributeTableDialog(layer, self.iface)
         self.dlg.show()
+
+    def showAboutDialog(self, checked=False, layer=None):
+
+        dlg = AboutDialog(layer, self.iface)
+        dlg.exec_()
+
+    def showManagedLayersDialog(self, checked=False, layer=None):
+
+        dlg = ManagedLayersDialog(layer, self.iface)
+        dlg.exec_()

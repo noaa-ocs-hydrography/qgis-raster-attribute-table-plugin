@@ -27,6 +27,7 @@ from qgis.core import (
     QgsCoordinateTransformContext,
     QgsProject,
     QgsPalettedRasterRenderer,
+    QgsSingleBandPseudoColorRenderer,
 )
 
 try:
@@ -107,8 +108,8 @@ class RAT:
     _dirty_xml_rats = {}
     _dirty_xml_layer_ids = []
 
-    def __init__(self, data, is_sidecar, fields, path):
-        """Create a RAT
+    def __init__(self, data={}, is_sidecar=False, fields={}, path=''):
+        """Create a RAT, default values create an invalid RAT
 
         :param data: dictionary with RAT data
         :type data: dict
@@ -148,16 +149,33 @@ class RAT:
         return self.__data
 
     @property
-    def value_column(self) -> str:
+    def row_count(self):
+
+        return len(self.data[self.value_columns[0]])
+
+    @property
+    def value_columns(self) -> list:
+        """Returns the list of value clumns:
+        if the type is THEMATIC there will be just one value column,
+        two value columns (min max) will be returnerd for ATHEMATIC RATs
+
+        :return: list of value column names
+        :rtype: list
+        """
 
         try:
-            return [field.name for field in self.fields.values() if field.usage == gdal.GFU_MinMax][0]
+            return [field.name for field in self.fields.values() if field.usage in {gdal.GFU_MinMax, gdal.GFU_Min, gdal.GFU_Max}]
         except:
-            return None
+            return []
 
     def isValid(self) -> bool:
 
-        return len(self.keys) > 0 and self.values is not None
+        return len(self.keys) > 0 and len(self.values) and (gdal.GFU_MinMax in self.field_usages or (gdal.GFU_Min in self.field_usages and gdal.GFU_Max in self.field_usages))
+
+    @property
+    def thematic_type(self):
+
+        return gdal.GRTT_THEMATIC if self.fields[self.value_columns[0]].usage == gdal.GFU_MinMax else gdal.GRTT_ATHEMATIC
 
     @property
     def field_usages(self) -> set:
@@ -225,16 +243,28 @@ class RAT:
 
         self.path = raster_source + '.dbf'
 
+        rat_log('RAT saved as DBF for layer %s' % raster_source)
+
         return writer.addFeatures(self.qgis_features())
 
     def save_as_xml(self, raster_source, band) -> bool:
+        """Saves .aux.xml RAT using GDAL
 
-        ds = gdal.OpenEx(raster_source)
+        :param raster_source: path of of the raster data file
+        :type raster_source: str
+        :param band: band number
+        :type band: int
+        :return: TRUE on success
+        :rtype: bool
+        """
+
+        ds = gdal.OpenEx(raster_source, gdal.OF_RASTER | gdal.OF_UPDATE)
         if ds:
             self.band = band
             gdal_band = ds.GetRasterBand(band)
             if gdal_band:
                 rat = gdal.RasterAttributeTable()
+                rat.SetTableType(self.thematic_type)
                 for field in list(self.fields.values()):
                     rat.CreateColumn(field.name, field.type, field.usage)
 
@@ -248,14 +278,14 @@ class RAT:
                     func = getattr(rat, 'SetValueAs%s' % type_map[field.type])
 
                     for row_index in range(len(values)):
+                        rat_log('Writing RAT value as %s, (%s, %s) %s' %
+                                (type_map[field.type], row_index, column_index, values[row_index]))
                         func(row_index, column_index, values[row_index])
 
                     column_index += 1
 
                 assert rat.GetColumnCount() == len(self.fields)
                 assert rat.GetRowCount() == len(self.values[0])
-
-                gdal_band.SetDefaultRAT(rat)
 
                 # Ugly hack because GDAL does not know about the newly created RAT
                 for layer in [l for l in QgsProject.instance().mapLayers().values() if l.source() == raster_source]:
@@ -265,12 +295,26 @@ class RAT:
                         RAT._dirty_xml_layer_ids.append(layer.id())
                         layer.destroyed.connect(self._restore_xml_rats)
 
+                gdal_band.SetDefaultRAT(rat)
+                ds.FlushCache()
+                # I don't know why but seems like you need to call this twice or
+                # the RAT is not really saved into the XML
+                gdal_band.SetDefaultRAT(rat)
+                ds.FlushCache()
+                rat_log('RAT saved as XML for layer %s' % raster_source)
+
                 return True
 
         return False
 
     def save(self, band) -> bool:
-        """Saves the changes in the modified RAT"""
+        """Saves the changes in the modified RAT
+
+        :param band: raster band 1-based
+        :type band: int
+        :return: TRUE on success
+        :rtype: bool
+        """
 
         raster_source = self.path[:-8]
         assert os.path.exists(raster_source)
@@ -367,7 +411,7 @@ class RAT:
 
         red = color.red()
         green = color.green()
-        blue = color.alpha()
+        blue = color.blue()
         alpha = color.alpha()
 
         self.data[RAT_COLOR_HEADER_NAME][row_index] = color
@@ -380,7 +424,7 @@ class RAT:
                     self.data[field.name][row_index] = green
                 elif field.usage == gdal.GFU_Blue:
                     self.data[field.name][row_index] = blue
-                elif field.usage == gdal.GFU_AlphaMax:
+                elif field.usage == gdal.GFU_Alpha:
                     self.data[field.name][row_index] = alpha
 
         return True
@@ -423,41 +467,54 @@ class RAT:
         :rtype: bool
         """
 
-        if self.has_color and raster_layer.isValid() and isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
-            result = False
-            red_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Red][0]
-            green_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Green][0]
-            blue_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Blue][0]
-            try:
-                alpha_column = [field.name for field in self.fields.values() if field.usage == gdal.GFU_Alpha][0]
-            except:
-                alpha_column = None
+        result = False
 
-            color_map = {}
-            for klass in raster_layer.renderer().classes():
-                color_map[klass.value] = klass.color
+        if self.has_color and raster_layer.isValid():
 
-            value_column = self.value_column
+            # Thematic
+            if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
 
-            for row_index in range(len(self.data[value_column])):
-                value = self.data[value_column][row_index]
+                red_column = [field.name for field in self.fields.values(
+                ) if field.usage == gdal.GFU_Red][0]
+                green_column = [field.name for field in self.fields.values(
+                ) if field.usage == gdal.GFU_Green][0]
+                blue_column = [field.name for field in self.fields.values(
+                ) if field.usage == gdal.GFU_Blue][0]
                 try:
-                    color = color_map[value]
-                    self.__data[RAT_COLOR_HEADER_NAME][row_index] = color
-                    self.__data[red_column][row_index] = color.red()
-                    self.__data[green_column][row_index] = color.green()
-                    self.__data[blue_column][row_index] = color.blue()
-                    if alpha_column is not None:
-                        self.__data[alpha_column][row_index] = color.alpha()
-                    result = True
-                except KeyError as ex:
-                    rat_log(f'Error setting color for value {value}: {ex}', Qgis.Warning)
+                    alpha_column = [field.name for field in self.fields.values(
+                    ) if field.usage == gdal.GFU_Alpha][0]
+                except:
+                    alpha_column = None
 
-            return result
+                color_map = {}
+                for klass in raster_layer.renderer().classes():
+                    color_map[klass.value] = klass.color
 
-        else:
-            return False
+                value_column = self.value_columns[0]
 
+                for row_index in range(len(self.data[value_column])):
+                    value = self.data[value_column][row_index]
+                    try:
+                        color = color_map[value]
+                        self.__data[RAT_COLOR_HEADER_NAME][row_index] = color
+                        self.__data[red_column][row_index] = color.red()
+                        self.__data[green_column][row_index] = color.green()
+                        self.__data[blue_column][row_index] = color.blue()
+                        if alpha_column is not None:
+                            self.__data[alpha_column][row_index] = color.alpha()
+                        result = True
+                    except KeyError as ex:
+                        rat_log(
+                            f'Error setting color for value {value}: {ex}', Qgis.Warning)
+
+                return result
+
+            elif isinstance(raster_layer.renderer(), QgsSingleBandPseudoColorRenderer):
+               pass
+            else:
+                rat_log('Unsupported layer renderer for layer %s' % raster_layer, Qgis.Critical)
+
+        return result
 
     def insert_color_fields(self, column) -> (bool, str):
         """Inserts all RGBA color fields at position column
@@ -518,13 +575,12 @@ class RAT:
         :rtype: tuple
         """
 
-        if row < 0  or row >= len(self.data[self.value_column]):
+        if row < 0 or row >= self.row_count:
             return False, QCoreApplication.translate('RAT', f'Out of range error removing row {row}')
         else:
             for values in self.values:
                 values.pop(row)
             return True, None
-
 
     def insert_row(self, row) -> (bool, str):
         """Insert a row before position row
@@ -535,7 +591,7 @@ class RAT:
         :rtype: tuple
         """
 
-        if row < 0  or row > len(self.data[self.value_column]):
+        if row < 0 or row > self.row_count:
             return False, QCoreApplication.translate('RAT', f'Out of range error adding a new row {row}')
         else:
             for key in self.keys:
@@ -551,6 +607,3 @@ class RAT:
                         data = ''
                 self.__data[key].insert(row, data)
             return True, None
-
-
-

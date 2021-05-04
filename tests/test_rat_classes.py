@@ -243,7 +243,7 @@ class TestRATClasses(TestCase):
         # Update color from raster
         self.assertTrue(rat.update_colors_from_raster(self.raster_layer_dbf))
 
-        value_column = rat.value_column
+        value_column = rat.value_columns[0]
         for row_index in range(len(rat.data[RAT_COLOR_HEADER_NAME])):
             self.assertEqual(rat.data[RAT_COLOR_HEADER_NAME][row_index], color_map[rat.data[value_column][row_index]])
 
@@ -252,32 +252,34 @@ class TestRATClasses(TestCase):
         def _test(raster_layer):
 
             rat = get_rat(raster_layer, 1)
-            self.assertNotEqual(rat.data[rat.value_column][-1], 0)
-            row_count = len(rat.data[rat.value_column])
+            value_column = rat.value_columns[0]
+
+            self.assertNotEqual(rat.data[value_column][-1], 0)
+            row_count = len(rat.data[value_column])
 
             result, error_message = rat.insert_row(0)
             self.assertTrue(result)
-            self.assertEqual(len(rat.data[rat.value_column]), row_count + 1)
-            self.assertEqual(rat.data[rat.value_column][0], 0)
+            self.assertEqual(len(rat.data[value_column]), row_count + 1)
+            self.assertEqual(rat.data[value_column][0], 0)
 
             result, error_message = rat.remove_row(0)
             self.assertTrue(result)
-            self.assertEqual(len(rat.data[rat.value_column]), row_count)
-            self.assertNotEqual(rat.data[rat.value_column][0], 0)
+            self.assertEqual(len(rat.data[value_column]), row_count)
+            self.assertNotEqual(rat.data[value_column][0], 0)
 
-            last = len(rat.data[rat.value_column])
+            last = len(rat.data[value_column])
             result, error_message = rat.insert_row(last)
             self.assertTrue(result)
-            self.assertEqual(len(rat.data[rat.value_column]), row_count + 1)
-            self.assertEqual(rat.data[rat.value_column][last], 0)
+            self.assertEqual(len(rat.data[value_column]), row_count + 1)
+            self.assertEqual(rat.data[value_column][last], 0)
 
             result, error_message = rat.remove_row(last)
             self.assertTrue(result)
-            self.assertEqual(len(rat.data[rat.value_column]), row_count)
-            self.assertNotEqual(rat.data[rat.value_column][last - 1], 0)
+            self.assertEqual(len(rat.data[value_column]), row_count)
+            self.assertNotEqual(rat.data[value_column][last - 1], 0)
 
             # Invalid ranges
-            last = len(rat.data[rat.value_column])
+            last = len(rat.data[value_column])
             self.assertFalse(rat.insert_row(-1)[0])
             self.assertFalse(rat.insert_row(last +1)[0])
             self.assertFalse(rat.remove_row(-1)[0])
@@ -285,6 +287,33 @@ class TestRATClasses(TestCase):
 
         _test(self.raster_layer_dbf)
         _test(self.raster_layer)
+
+    def test_edit_rat(self):
+
+        tmp_dir = QTemporaryDir()
+
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16.tif'), tmp_dir.path())
+
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), '2x2_2_BANDS_INT16.tif'), 'rat_test', 'gdal')
+        self.assertTrue(raster_layer.isValid())
+
+        band = 1
+
+        rat = get_rat(raster_layer, band)
+        self.assertTrue(rat.isValid())
+
+        self.assertEqual(rat.data['Red'], [0, 100, 200])
+        rat.data['Red'] = [111, 222, 123]
+        rat.save(band)
+
+        rat = get_rat(raster_layer, band)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.data['Red'], [111, 222, 123])
 
 
 

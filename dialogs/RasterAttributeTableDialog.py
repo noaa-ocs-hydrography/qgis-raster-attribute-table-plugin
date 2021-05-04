@@ -60,6 +60,14 @@ class ColorDelegate(QStyledItemDelegate):
         model.setData(index, color)
 
 
+class ColorAlphaDelegate(ColorDelegate):
+
+    def createEditor(self, parent, option, index):
+        dialog = super().createEditor(parent, option, index)
+        dialog.setOption(QColorDialog.ShowAlphaChannel)
+        return dialog
+
+
 class RasterAttributeTableDialog(QDialog):
 
     def __init__(self, raster_layer, iface=None):
@@ -194,13 +202,13 @@ class RasterAttributeTableDialog(QDialog):
                 dlg.mColor.setChecked(True)
                 dlg.mStandardColumn.setEnabled(False)
             else:  # We cannot add any field, we should never get here!
-                rat_log('Cannot add any column: this should have been checked before getting so far!', Qgis.Critical)
+                rat_log(
+                    'Cannot add any column: this should have been checked before getting so far!', Qgis.Critical)
 
         else:
             usages_info = rat_column_info()
             for usage in allowed_usages:
-                                    dlg.mUsage.addItem(usages_info[usage]['name'], usage)
-
+                dlg.mUsage.addItem(usages_info[usage]['name'], usage)
 
         if dlg.exec_() == QDialog.Accepted:
             position = dlg.mColumn.currentText()
@@ -301,7 +309,8 @@ class RasterAttributeTableDialog(QDialog):
         enable_editing_buttons = self.mRATView.selectionModel(
         ).currentIndex().isValid() and self.editable
 
-        self.mAddColumnToolButton.setEnabled(enable_editing_buttons and self.canAddAnyColumn())
+        self.mAddColumnToolButton.setEnabled(
+            enable_editing_buttons and self.canAddAnyColumn())
         self.mRemoveColumnToolButton.setEnabled(enable_editing_buttons)
         self.mAddRowToolButton.setEnabled(enable_editing_buttons)
         self.mRemoveRowToolButton.setEnabled(enable_editing_buttons)
@@ -327,7 +336,8 @@ class RasterAttributeTableDialog(QDialog):
 
         rat = self.model.rat
         band = self.mRasterBandsComboBox.currentIndex() + 1
-        rat.save(band)
+        if rat.save(band):
+            self.is_dirty = False
 
     def accept(self):
         QgsSettings().setValue("RasterAttributeTable/geometry",
@@ -396,7 +406,10 @@ class RasterAttributeTableDialog(QDialog):
 
             # Color picker
             if self.rat.has_color:
-                colorDelegate = ColorDelegate(self.mRATView)
+                if gdal.GFU_Alpha in self.rat.field_usages:
+                    colorDelegate = ColorAlphaDelegate(self.mRATView)
+                else:
+                    colorDelegate = ColorDelegate(self.mRATView)
                 self.mRATView.setItemDelegateForColumn(0, colorDelegate)
 
             headers = self.rat.keys
@@ -408,7 +421,7 @@ class RasterAttributeTableDialog(QDialog):
                 self.mClassifyComboBox.setCurrentIndex(
                     self.mClassifyComboBox.findText(criteria))
             self.mRATView.sortByColumn(self.model.headers.index(
-                self.rat.value_column), Qt.AscendingOrder)
+                self.rat.value_columns[0]), Qt.AscendingOrder)
             return True
         else:
             rat_log(QCoreApplication.translate(
