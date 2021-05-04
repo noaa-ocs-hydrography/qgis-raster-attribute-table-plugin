@@ -35,17 +35,25 @@ class ManagedLayersDialog(QDialog):
             __file__), 'Ui_ManagedLayersDialog.ui')
         uic.loadUi(ui_path, self)
 
-        for layer in managed_layers():
-            item = QListWidgetItem(layer.name())
-            item.setData(Qt.UserRole, layer.id())
-            self.mManagedLayers.addItem(item)
+
         try:
             self.restoreGeometry(QgsSettings().value(
                 "RATManagedLayers/geometry", None, QByteArray, QgsSettings.Plugins))
         except:
             pass
 
+        self.updateManaged()
+
         self.mUnmanage.clicked.connect(self.unmanageSelected)
+
+    def updateManaged(self):
+
+        self.mManagedLayers.clear()
+
+        for layer in managed_layers():
+            item = QListWidgetItem(layer.name())
+            item.setData(Qt.UserRole, layer.id())
+            self.mManagedLayers.addItem(item)
 
     def accept(self):
         QgsSettings().setValue("RATManagedLayers/geometry",
@@ -60,11 +68,17 @@ class ManagedLayersDialog(QDialog):
 
     def unmanageSelected(self):
 
+        requires_update = False
+
         for item in self.mManagedLayers.selectedItems():
             layer_id = item.data(Qt.UserRole)
-            layer = QgsProject.instance().mapLayerById(layer_id)
+            layer = QgsProject.instance().mapLayer(layer_id)
             if layer:
-                layer.clearCustomProperty(
+                layer.removeCustomProperty(
                     RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA)
+                requires_update = True
+
+        if requires_update:
+            self.updateManaged()
 
 

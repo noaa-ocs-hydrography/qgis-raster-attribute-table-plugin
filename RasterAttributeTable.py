@@ -49,7 +49,8 @@ class RasterAttributeTable(QObject):
             QgsApplication.getThemeIcon("/mActionAddTable.svg"), QCoreApplication.translate("RAT", "&New Attribute Table"))
         self.managed_rasters_action = QAction(
             QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'rat_icon.svg')), QCoreApplication.translate("RAT", "Managed Layers"))
-        self.about_action = QAction(QgsApplication.getThemeIcon("/mActionHelpContents.svg"), QCoreApplication.translate("RAT", "About RAT Plugin"))
+        self.about_action = QAction(QgsApplication.getThemeIcon(
+            "/mActionHelpContents.svg"), QCoreApplication.translate("RAT", "About RAT Plugin"))
 
         rat_log("Init completed")
 
@@ -196,5 +197,4 @@ class RasterAttributeTable(QObject):
     def showManagedLayersDialog(self):
 
         dlg = ManagedLayersDialog(self.iface)
-
-
+        dlg.exec_()
