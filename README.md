@@ -39,6 +39,7 @@ https://user-images.githubusercontent.com/142164/117006916-4af72380-ace9-11eb-96
 ## Current limitations/unsupported features
 
 + Linear binning
++ Range colors (MinRed/MaxRed etc.)
 
 ## Testing
 
