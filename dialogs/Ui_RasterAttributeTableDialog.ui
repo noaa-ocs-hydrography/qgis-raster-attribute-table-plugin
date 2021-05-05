@@ -107,7 +107,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>Delete current row</string>
+          <string>Add a new row</string>
          </property>
          <property name="text">
           <string/>
