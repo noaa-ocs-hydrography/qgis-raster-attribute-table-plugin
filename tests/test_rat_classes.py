@@ -365,6 +365,39 @@ class TestRATClasses(TestCase):
         self.assertTrue(rat.isValid())
         self.assertEqual(rat.data['Red'], [111, 222, 123])
 
+    def test_athematic_dbf_roundtrip(self):
+        """Test that saving as athematic and reloading does not loose type"""
+
+        rat = get_rat(self.raster_layer_athematic, 1)
+        self.assertTrue(rat.has_color)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.thematic_type, gdal.GRTT_ATHEMATIC)
+
+        # Delete the layer and the PAM file
+        raster_source = self.raster_layer_athematic.source()
+        pam_path = raster_source + '.aux.xml'
+        del (self.raster_layer_athematic)
+        os.unlink(pam_path)
+
+        rat.save_as_dbf(raster_source)
+        self.assertTrue(os.path.exists(raster_source + '.vat.dbf'))
+
+        self.raster_layer_athematic = QgsRasterLayer(raster_source, 'rat_test', 'gdal')
+
+        rat_dbf = get_rat(self.raster_layer_athematic, 1)
+        self.assertTrue(rat_dbf.has_color)
+        self.assertTrue(rat_dbf.isValid())
+        self.assertEqual(rat_dbf.thematic_type, gdal.GRTT_ATHEMATIC)
+        self.assertEqual(rat_dbf.field_usages, {
+            gdal.GFU_Generic,
+            gdal.GFU_Red,
+            gdal.GFU_Green,
+            gdal.GFU_Blue,
+            gdal.GFU_Min,
+            gdal.GFU_Max,
+        })
+
+
 
 if __name__ == '__main__':
     main()

@@ -56,10 +56,10 @@ class CreateRasterAttributeTableDialog(QDialog):
                                self.saveGeometry(), QgsSettings.Plugins)
 
         # Create the RAT
-        is_sidecar = self.mDbfRadioButton.isChecked()
-        rat_path = self.layer.publicSource() + ('.vat.dbf' if is_sidecar else '.aux.xml')
+        is_dbf = self.mDbfRadioButton.isChecked()
+        rat_path = self.layer.publicSource() + ('.vat.dbf' if is_dbf else '.aux.xml')
         rat = create_rat_from_raster(
-            self.layer, is_sidecar, rat_path)
+            self.layer, is_dbf, rat_path)
         if not rat.isValid():
             self.iface.messageBar().pushMessage(
                 QCoreApplication.translate('RAT', "Error"),
@@ -70,7 +70,8 @@ class CreateRasterAttributeTableDialog(QDialog):
                     QCoreApplication.translate('RAT', "Error"),
                     QCoreApplication.translate('RAT', "There was an error saving the RAT."), level=Qgis.Critical)
             else:
-                rat_log("The Raster Attribute Table has been successfully saved to: %s" % rat_path)
+                rat_log(
+                    "The Raster Attribute Table has been successfully saved to: %s" % rat_path)
                 self.ratCreated.emit(self.layer)
 
         super().accept()

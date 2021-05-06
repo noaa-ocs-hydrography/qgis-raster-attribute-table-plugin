@@ -50,7 +50,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
     :type raster_layer: QgsRasterLayer
     :param band: band number (1-based)
     :type band: int
-    :param colors: name of the RGB(A) columns for sidecar DBF files, defaults to ('R', 'G', 'B', 'A')
+    :param colors: default name of the RGB(A) columns for sidecar DBF files, defaults to ('R', 'G', 'B', 'A'), these are searched first
     :type red_column_name: tuple, optional
     :return: RAT
     :rtype: RAT
@@ -64,7 +64,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
 
     COLOR_ROLES = (gdal.GFU_Red, gdal.GFU_Green, gdal.GFU_Blue, gdal.GFU_Alpha)
 
-    is_sidecar = False
+    is_dbf = False
 
     ds = gdal.OpenEx(raster_layer.source())
     if ds:
@@ -91,7 +91,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                             values[headers[c]].append(
                                 html.unescape(rat.GetValueAsString(r, c)))
 
-            path = raster_layer.source() + '.aux.xml'
+                path = raster_layer.source() + '.aux.xml'
 
     # Search for sidecar DBF files, `band` is ignored!
     if not values:
@@ -104,22 +104,49 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                       filename + '.dbf', filename + '.vat.dbf')
 
         for candidate in candidates:
+
             if os.path.exists(os.path.join(directory, candidate)):
                 rat_layer = QgsVectorLayer(os.path.join(
                     directory, candidate), 'rat', 'ogr')
+
                 if rat_layer.isValid():
                     path = os.path.join(directory, candidate)
+
+                    # Get fields
+                    # Check if color fields are there, fall-back to RED GREEN BLUE ALPHA if not
+                    field_upper_names = [f.name().upper() for f in rat_layer.fields()]
+                    upper_colors = [c.upper() for c in colors]
+
+                    def _search_color():
+                        color_found = True
+                        for color_field_name in upper_colors[:3]:
+                            if color_field_name not in field_upper_names:
+                                color_found = False
+                        return color_found
+
+                    if not _search_color() and colors == ('R', 'G', 'B', 'A'):
+                        upper_colors = ('RED', 'GREEN', 'BLUE', 'ALPHA')
+
+                    # Create fields
                     for f in rat_layer.fields():
+
                         headers.append(f.name())
-                        if f.name().upper() in colors:
+                        field_name_upper = f.name().upper()
+                        if field_name_upper in upper_colors:
                             fields[f.name()] = RATField(
-                                f.name(), COLOR_ROLES[colors.index(f.name().upper())], gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
-                        elif f.name().upper() == 'COUNT':
+                                f.name(), COLOR_ROLES[upper_colors.index(field_name_upper)], gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
+                        elif field_name_upper == 'COUNT':
                             fields[f.name()] = RATField(
                                 f.name(), gdal.GFU_PixelCount, gdal.GFT_Integer)
-                        elif f.name().upper() == 'VALUE':
+                        elif field_name_upper == 'VALUE':
                             fields[f.name()] = RATField(
                                 f.name(), gdal.GFU_MinMax, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
+                        elif field_name_upper in ('VALUE MIN', 'VALUE_MIN'):
+                            fields[f.name()] = RATField(
+                                f.name(), gdal.GFU_Min, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
+                        elif field_name_upper in ('VALUE MAX', 'VALUE_MAX'):
+                            fields[f.name()] = RATField(
+                                f.name(), gdal.GFU_Max, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
                         else:
                             if f.type() in (QVariant.Int, QVariant.LongLong):
                                 type = gdal.GFT_Integer
@@ -136,7 +163,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                     for f in rat_layer.getFeatures():
                         for header in headers:
                             values[header].append(f.attribute(header))
-                    is_sidecar = True
+                    is_dbf = True
                     break
 
     # Colors
@@ -174,7 +201,7 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                     values[RAT_COLOR_HEADER_NAME].append(getattr(QColor, func)(
                         values[red][i], values[green][i], values[blue][i]))
 
-    return RAT(values, is_sidecar, fields, path)
+    return RAT(values, is_dbf, fields, path)
 
 
 def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRasterBlockFeedback()) -> list:
@@ -452,13 +479,13 @@ def can_create_rat(raster_layer) -> bool:
     return raster_layer.isValid() and isinstance(raster_layer.renderer(), (QgsPalettedRasterRenderer, QgsSingleBandPseudoColorRenderer))
 
 
-def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlockFeedback()) -> RAT:
+def create_rat_from_raster(raster_layer, is_dbf, path, feedback=QgsRasterBlockFeedback()) -> RAT:
     """Creates a new RAT object from a raster layer, an invalid RAT is returned in case of errors.
 
     :param raster_layer: raster layer
     :type raster_layer: QgsRasterLayer
-    :param is_sidecar: raster layer
-    :type is_sidecar: bool
+    :param is_dbf: raster layer
+    :type is_dbf: bool
     :return: new RAT
     :rtype: RAT
     """
@@ -566,7 +593,7 @@ def create_rat_from_raster(raster_layer, is_sidecar, path, feedback=QgsRasterBlo
         data['A'].append(klass.color.alpha())
         i += 1
 
-    return RAT(data, is_sidecar, fields, path)
+    return RAT(data, is_dbf, fields, path)
 
 
 def data_type_name(data_type) -> str:

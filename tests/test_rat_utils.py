@@ -65,7 +65,7 @@ class RatUtilsTest(TestCase):
 
         rat = get_rat(raster_layer, 1)
         self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
-        self.assertFalse(rat.is_sidecar)
+        self.assertFalse(rat.is_dbf)
         self.assertEqual(list(rat.keys), ['Value',
                                           'Count',
                                           'data_assessment',
@@ -87,7 +87,7 @@ class RatUtilsTest(TestCase):
         rat = get_rat(raster_layer, 2)
         self.assertEqual(rat.data, {})
 
-    def test_sidecar_rat(self):
+    def test_dbf_rat(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
@@ -97,7 +97,7 @@ class RatUtilsTest(TestCase):
         self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
         self.assertIsNotNone(rat.path)
         self.assertIn('ExistingVegetationTypes_sample.img.vat.dbf', rat.path)
-        self.assertTrue(rat.is_sidecar)
+        self.assertTrue(rat.is_dbf)
         self.assertEqual(rat.keys, [
             'VALUE',
             'COUNT',
@@ -125,7 +125,7 @@ class RatUtilsTest(TestCase):
         rat = get_rat(raster_layer, 1, ('RED', 'GREEN', 'BLUE'))
         self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
 
-        self.assertTrue(rat.is_sidecar)
+        self.assertTrue(rat.is_dbf)
         self.assertEqual(rat.keys, [
             'VALUE',
             'COUNT',
@@ -169,14 +169,14 @@ class RatUtilsTest(TestCase):
         for klass in classes:
             self.assertEqual(klass.color.name(), colors[klass.label])
 
-    def test_embedded_classify_embedded(self):
+    def test_pam_classify(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.source_information.tiff'), 'rat_test', 'gdal')
         criteria = 'horizontal_uncert_fixed'
         self._test_classify(raster_layer, criteria)
 
-    def test_sidecar_classify(self):
+    def test_dbf_classify(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
@@ -190,7 +190,8 @@ class RatUtilsTest(TestCase):
         shutil.copy(os.path.join(os.path.dirname(
             __file__), 'data', 'ExistingVegetationTypes_sample.img'), tmp_dir.path())
 
-        dest_raster_layer = QgsRasterLayer(os.path.join(tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        dest_raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
         rat = get_rat(dest_raster_layer, 1)
         self.assertFalse(rat.isValid())
 
@@ -199,7 +200,8 @@ class RatUtilsTest(TestCase):
 
         rat = get_rat(raster_layer, 1)
         self.assertTrue(rat.isValid())
-        self.assertTrue(rat.save_as_dbf(os.path.join(tmp_dir.path(), 'ExistingVegetationTypes_sample.img')))
+        self.assertTrue(rat.save_as_dbf(os.path.join(
+            tmp_dir.path(), 'ExistingVegetationTypes_sample.img')))
 
         dest_raster_layer = QgsRasterLayer(os.path.join(
             tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
@@ -253,20 +255,20 @@ class RatUtilsTest(TestCase):
             __file__), 'data', '2x2_2_BANDS_INT16.tif'), 'rat_test', 'gdal')
         self.assertTrue(has_rat(raster_layer))
 
-
     def test_can_create_rat(self):
 
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'NBS_US5PSMBE_20200923_0_generalized_p.tiff'), 'rat_test', 'gdal')
         self.assertFalse(can_create_rat(raster_layer))
 
-        renderer = QgsPalettedRasterRenderer(raster_layer.dataProvider(), 1, [])
+        renderer = QgsPalettedRasterRenderer(
+            raster_layer.dataProvider(), 1, [])
         raster_layer.setRenderer(renderer)
         self.assertTrue(can_create_rat(raster_layer))
 
     def test_rat_create(self):
 
-        def _test(is_sidecar):
+        def _test(is_dbf):
 
             QgsProject.instance().removeAllMapLayers()
 
@@ -275,10 +277,11 @@ class RatUtilsTest(TestCase):
                 __file__), 'data', 'raster-palette.tif'), tmp_dir.path())
 
             rat_path = os.path.join(
-                tmp_dir.path(), 'raster-palette.tif' + ('.vat.dbf' if is_sidecar else '.aux.xml'))
+                tmp_dir.path(), 'raster-palette.tif' + ('.vat.dbf' if is_dbf else '.aux.xml'))
             self.assertFalse(os.path.exists(rat_path))
 
-            raster_layer = QgsRasterLayer(os.path.join(tmp_dir.path(), 'raster-palette.tif'), 'rat_test', 'gdal')
+            raster_layer = QgsRasterLayer(os.path.join(
+                tmp_dir.path(), 'raster-palette.tif'), 'rat_test', 'gdal')
             QgsProject.instance().addMapLayer(raster_layer)
 
             self.assertTrue(raster_layer.isValid())
@@ -294,12 +297,12 @@ class RatUtilsTest(TestCase):
             raster_layer.setRenderer(renderer)
             self.assertTrue(can_create_rat(raster_layer))
 
-            rat = create_rat_from_raster(raster_layer, is_sidecar, rat_path)
+            rat = create_rat_from_raster(raster_layer, is_dbf, rat_path)
             self.assertTrue(rat.isValid())
 
             self.assertEqual(rat.data['Count'], [78, 176, 52])
             self.assertEqual(rat.data['Value'], [
-                            2.257495271713565, 7.037407804695962, 270.4551067154352])
+                2.257495271713565, 7.037407804695962, 270.4551067154352])
             self.assertEqual(rat.data['A'], [255, 255, 255])
             self.assertNotEqual(rat.data['R'], [0, 0, 0])
 
@@ -352,7 +355,8 @@ class RatUtilsTest(TestCase):
                          3000000000000.0, 1e+20, 5e+25])
 
         # Round trip tests
-        unique_indexes = rat_classify(raster_layer, band, rat, 'Class', ramp=None)
+        unique_indexes = rat_classify(
+            raster_layer, band, rat, 'Class', ramp=None)
         self.assertEqual(unique_indexes, [1, 2, 3])
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
             tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
@@ -366,7 +370,8 @@ class RatUtilsTest(TestCase):
             rat2.data['Value Max'], [3000000000000.0, 1e+20, 5e+25])
 
         # Reclass on class 2
-        unique_indexes = rat_classify(raster_layer, band, rat, 'Class2', ramp=None)
+        unique_indexes = rat_classify(
+            raster_layer, band, rat, 'Class2', ramp=None)
         self.assertEqual(unique_indexes, [1, 2])
 
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
@@ -396,7 +401,6 @@ class RatUtilsTest(TestCase):
         unique_indexes = rat_classify(raster_layer, 1, rat, 'class2')
         self.assertEqual(unique_indexes, [1, 2, 3])
 
-
     def test_data_type_name(self):
 
         self.assertEqual(data_type_name(gdal.GFT_Real), 'Floating point')
@@ -404,6 +408,7 @@ class RatUtilsTest(TestCase):
         self.assertEqual(data_type_name(gdal.GFT_String), 'String')
         self.assertEqual(data_type_name(-100), 'String')
         self.assertEqual(data_type_name(100), 'String')
+
 
 if __name__ == '__main__':
     main()

@@ -109,13 +109,13 @@ class RAT:
     _dirty_xml_rats = {}
     _dirty_xml_layer_ids = []
 
-    def __init__(self, data={}, is_sidecar=False, fields={}, path=''):
+    def __init__(self, data={}, is_dbf=False, fields={}, path=''):
         """Create a RAT, default values create an invalid RAT
 
         :param data: dictionary with RAT data
         :type data: dict
-        :param is_sidecar: TRUE if is a .VAT.DBF sidecar RAT
-        :type is_sidecar: bool
+        :param is_dbf: TRUE if is a .VAT.DBF sidecar RAT
+        :type is_dbf: bool
         :param fields: dictionary of RAT fields, name is the key
         :type fields: dict
         :param path: path to the RAT file (vat.dbf or aux.xml)
@@ -123,7 +123,7 @@ class RAT:
         """
 
         self.__data = data
-        self.is_sidecar = is_sidecar
+        self.is_dbf = is_dbf
         self.fields = fields
         self.path = path
         self.band = -1  # Unknown, for XML it will be set on save()
@@ -289,7 +289,6 @@ class RAT:
 
                 column_index = 0
 
-
                 for field_name, field in self.fields.items():
                     values = self.data[field_name]
                     func = getattr(rat, 'SetValueAs%s' % type_map[field.type])
@@ -297,7 +296,8 @@ class RAT:
                     for row_index in range(len(values)):
                         rat_log('Writing RAT value as %s, (%s, %s) %s' %
                                 (type_map[field.type], row_index, column_index, values[row_index]))
-                        value = html.escape(values[row_index]) if field.type == gdal.GFT_String else values[row_index]
+                        value = html.escape(
+                            values[row_index]) if field.type == gdal.GFT_String else values[row_index]
                         func(row_index, column_index, value)
 
                     column_index += 1
@@ -337,7 +337,7 @@ class RAT:
         raster_source = self.path[:-8]
         assert os.path.exists(raster_source)
 
-        if self.is_sidecar:
+        if self.is_dbf:
             return self.save_as_dbf(raster_source)
         else:
             return self.save_as_xml(raster_source, band)
@@ -550,10 +550,12 @@ class RAT:
                         value_column = self.field_name(gdal.GFU_Max)
                         return _set_colors(value_column, classes)
 
-                rat_log(f'Error retrieving classes from shader on layer {raster_layer.name()}', Qgis.Critical)
+                rat_log(
+                    f'Error retrieving classes from shader on layer {raster_layer.name()}', Qgis.Critical)
 
             else:
-                rat_log(f'Unsupported layer renderer for layer  {raster_layer.name()}', Qgis.Critical)
+                rat_log(
+                    f'Unsupported layer renderer for layer  {raster_layer.name()}', Qgis.Critical)
 
         return result
 
