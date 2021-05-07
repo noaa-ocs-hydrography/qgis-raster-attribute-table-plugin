@@ -91,6 +91,34 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                             values[headers[c]].append(
                                 html.unescape(rat.GetValueAsString(r, c)))
 
+                # Try to identify fields in case of RAT with wrong usages
+                usages = [f.usage for f in fields.values()]
+                if gdal.GFU_MinMax not in usages and not {gdal.GFU_Min, gdal.GFU_Max}.issubset(usages):
+                    try:
+                        field_name = [f.name for f in fields.values() if f.name.upper() == 'VALUE'][0]
+                        fields[field_name].usage = gdal.GFU_MinMax
+                    except IndexError:
+                        pass
+
+                    try:
+                        field_name = [f.name for f in fields.values() if f.name.upper() in ('VALUE MIN', 'MIN', 'MIN VALUE', 'VALUE_MIN', 'MIN_VALUE')][0]
+                        fields[field_name].usage = gdal.GFU_Min
+                    except IndexError:
+                        pass
+
+                    try:
+                        field_name = [f.name for f in fields.values() if f.name.upper() in ('VALUE MAX', 'MAX', 'MAX VALUE', 'VALUE_MAX', 'MAX_VALUE')][0]
+                        fields[field_name].usage = gdal.GFU_Max
+                    except IndexError:
+                        pass
+
+                if gdal.GFU_PixelCount not in usages:
+                    try:
+                        field_name = [f.name for f in fields.values() if f.name.upper() == 'COUNT'][0]
+                        fields[field_name].usage = gdal.GFU_PixelCount
+                    except IndexError:
+                        pass
+
                 path = raster_layer.source() + '.aux.xml'
 
     # Search for sidecar DBF files, `band` is ignored!
@@ -141,10 +169,10 @@ def get_rat(raster_layer, band, colors=('R', 'G', 'B', 'A')):
                         elif field_name_upper == 'VALUE':
                             fields[f.name()] = RATField(
                                 f.name(), gdal.GFU_MinMax, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
-                        elif field_name_upper in ('VALUE MIN', 'VALUE_MIN'):
+                        elif field_name_upper in ('VALUE MIN', 'VALUE_MIN', 'MIN VALUE', 'MIN_VALUE'):
                             fields[f.name()] = RATField(
                                 f.name(), gdal.GFU_Min, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
-                        elif field_name_upper in ('VALUE MAX', 'VALUE_MAX'):
+                        elif field_name_upper in ('VALUE MAX', 'VALUE_MAX', 'MAX VALUE', 'MAX_VALUE'):
                             fields[f.name()] = RATField(
                                 f.name(), gdal.GFU_Max, gdal.GFT_Integer if f.type() in (QVariant.Int, QVariant.LongLong) else gdal.GFT_Real)
                         else:

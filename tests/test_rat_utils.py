@@ -409,6 +409,22 @@ class RatUtilsTest(TestCase):
         self.assertEqual(data_type_name(-100), 'String')
         self.assertEqual(data_type_name(100), 'String')
 
+    def test_rat_xml_no_usage(self):
+        """Test we can open an XML rat with no usage"""
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16_NO_USAGE.tif'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16_NO_USAGE.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), '2x2_2_BANDS_INT16_NO_USAGE.tif'), 'rat_test', 'gdal')
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
+        self.assertIn(gdal.GFU_PixelCount, rat.field_usages)
+
 
 if __name__ == '__main__':
     main()
