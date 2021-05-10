@@ -16,7 +16,7 @@ __copyright__ = 'Copyright 2021, ItOpen'
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication, QByteArray, pyqtSignal
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QByteArray, pyqtSignal
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 from qgis.core import Qgis, QgsApplication, QgsSettings, QgsRasterLayer, QgsMapLayer
 
@@ -58,8 +58,10 @@ class CreateRasterAttributeTableDialog(QDialog):
         # Create the RAT
         is_dbf = self.mDbfRadioButton.isChecked()
         rat_path = self.layer.publicSource() + ('.vat.dbf' if is_dbf else '.aux.xml')
+        QgsApplication.setOverrideCursor(Qt.WaitCursor)
         rat = create_rat_from_raster(
             self.layer, is_dbf, rat_path)
+        QgsApplication.restoreOverrideCursor()
         if not rat.isValid():
             self.iface.messageBar().pushMessage(
                 QCoreApplication.translate('RAT', "Error"),

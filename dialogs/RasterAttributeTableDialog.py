@@ -84,8 +84,11 @@ class RasterAttributeTableDialog(QDialog):
         self.editable = False
         self.is_dirty = False
 
-        self.mRasterBandsComboBox.addItems(
-            [raster_layer.bandName(bn) for bn in range(1, raster_layer.bandCount() + 1)])
+        # Get band from renderer
+        self.band = raster_layer.renderer().band()
+        assert self.loadRat(self.band)
+
+        self.mRasterBand.setText(raster_layer.bandName(self.band))
 
         # Setup edit menu actions
         self.mActionToggleEditing = QAction(
@@ -111,14 +114,10 @@ class RasterAttributeTableDialog(QDialog):
         self.mEditToolBar.addAction(self.mActionSaveChanges)
         self.layout().setMenuBar(self.mEditToolBar)
 
-        assert self.loadRat(0)
-
         self.setEditable(False)
 
         # Connections
         self.mClassifyButton.clicked.connect(self.classify)
-        self.mRasterBandsComboBox.currentIndexChanged.connect(
-            self.loadRat)
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.reject)
 
@@ -334,7 +333,7 @@ class RasterAttributeTableDialog(QDialog):
                                     QCoreApplication.translate('RAT', "RAT has been modified, Do you want to save the changes?")) == QMessageBox.Yes:
                 self.saveChanges()
             else:
-                self.loadRat(self.mRasterBandsComboBox.currentIndex())
+                self.loadRat(self.band)
 
         self.editable = editable
         self.model.setEditable(editable)
@@ -344,8 +343,7 @@ class RasterAttributeTableDialog(QDialog):
         """Store changes back into the RAT"""
 
         rat = self.model.rat
-        band = self.mRasterBandsComboBox.currentIndex() + 1
-        if rat.save(band):
+        if rat.save(self.band):
             self.is_dirty = False
 
     def accept(self):
@@ -368,11 +366,11 @@ class RasterAttributeTableDialog(QDialog):
                                 QCoreApplication.translate(
                                     'RAT', "Overwrite classification"),
                                 QCoreApplication.translate('RAT', "The existing classification will be overwritten, do you want to continue?")) == QMessageBox.Yes:
-            band = self.mRasterBandsComboBox.currentIndex() + 1
+
             criteria = self.mClassifyComboBox.currentText()
             # TODO: ramp & feedback
             unique_class_row_indexes = rat_classify(
-                self.raster_layer, band, self.rat, criteria)
+                self.raster_layer, self.band, self.rat, criteria)
             unique_class_row_indexes.insert(0, 0)
             if self.iface is not None:
                 deduplicate_legend_entries(
@@ -404,17 +402,12 @@ class RasterAttributeTableDialog(QDialog):
         rat_log('Model is dirty')
         self.updateButtons()
 
-    def loadRat(self, band_0_based) -> bool:
-        """Load RAT for raster band 0-based"""
-
-        if type(band_0_based) != int:
-            rat_log(QCoreApplication.translate(
-                'RAT', 'Invalid band number for the selected raster.'), Qgis.Critical)
-            return False
+    def loadRat(self, band) -> bool:
+        """Load RAT for raster band 1-based"""
 
         self.mClassifyComboBox.clear()
 
-        self.rat = get_rat(self.raster_layer, band_0_based + 1)
+        self.rat = get_rat(self.raster_layer, band)
 
         if self.rat.keys:
             self.model = RATModel(self.rat)
