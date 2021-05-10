@@ -316,7 +316,7 @@ class RAT:
                 gdal_band.SetDefaultRAT(rat)
                 ds.FlushCache()
                 # I don't know why but seems like you need to call this twice or
-                # the RAT is not really saved into the XML
+                # the RAT is not really saved into the XML, see: https://github.com/OSGeo/gdal/pull/3796
                 gdal_band.SetDefaultRAT(rat)
                 ds.FlushCache()
                 rat_log('RAT saved as XML for layer %s' % raster_source)
