@@ -21,6 +21,7 @@ from qgis.PyQt.QtCore import Qt, QModelIndex
 
 from dialogs.RasterAttributeTableDialog import RasterAttributeTableDialog
 from rat_constants import RAT_COLOR_HEADER_NAME
+from rat_utils import get_rat, rat_classify
 
 class RasterAttributeTableDialogTest(TestCase):
 
@@ -40,6 +41,8 @@ class RasterAttributeTableDialogTest(TestCase):
         raster_layer = QgsRasterLayer(os.path.join(os.path.dirname(
             __file__), 'data', 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
         self.assertTrue(raster_layer.isValid())
+        rat = get_rat(raster_layer, 1)
+        rat_classify(raster_layer, 1, rat, 'EVT_NAME')
 
         dialog = RasterAttributeTableDialog(raster_layer)
         model = dialog.mRATView.model()
