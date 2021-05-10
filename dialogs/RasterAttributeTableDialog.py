@@ -24,7 +24,7 @@ from osgeo import gdal
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QByteArray, QSortFilterProxyModel
-from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QStyledItemDelegate, QColorDialog
+from qgis.PyQt.QtWidgets import QAction, QDialog, QMessageBox, QTableWidgetItem, QStyledItemDelegate, QColorDialog, QToolBar
 from qgis.PyQt.QtTest import QAbstractItemModelTester
 from qgis.core import Qgis, QgsApplication, QgsSettings
 
@@ -72,11 +72,12 @@ class RasterAttributeTableDialog(QDialog):
 
     def __init__(self, raster_layer, iface=None):
 
-        QDialog.__init__(self)
+        super().__init__(None, Qt.Dialog)
         # Set up the user interface from Designer.
         ui_path = os.path.join(os.path.dirname(
             __file__), 'Ui_RasterAttributeTableDialog.ui')
         uic.loadUi(ui_path, self)
+        self.setWindowTitle(raster_layer.name() + ' — ' + self.windowTitle())
 
         self.raster_layer = raster_layer
         self.iface = iface
@@ -86,27 +87,29 @@ class RasterAttributeTableDialog(QDialog):
         self.mRasterBandsComboBox.addItems(
             [raster_layer.bandName(bn) for bn in range(1, raster_layer.bandCount() + 1)])
 
-        self.mToggleEditingToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionEditTable.svg"))
-        self.mAddColumnToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionNewAttribute.svg"))
-        self.mAddRowToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionNewTableRow.svg"))
-        self.mRemoveRowToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionRemoveSelectedFeature.svg"))
-        self.mRemoveColumnToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionDeleteAttribute.svg"))
-        self.mSaveChangesToolButton.setIcon(
-            QgsApplication.getThemeIcon("/mActionSaveAllEdits.svg"))
+        # Setup edit menu actions
+        self.mActionToggleEditing = QAction(
+            QgsApplication.getThemeIcon("/mActionEditTable.svg"), QCoreApplication.translate("RAT", "&Edit Attribute Table"))
+        self.mActionToggleEditing.setCheckable(True)
+        self.mActionNewColumn = QAction(
+            QgsApplication.getThemeIcon("/mActionNewAttribute.svg"), QCoreApplication.translate("RAT", "New &Column"))
+        self.mActionNewRow = QAction(
+            QgsApplication.getThemeIcon("/mActionNewTableRow.svg"), QCoreApplication.translate("RAT", "New &Row"))
+        self.mActionRemoveRow = QAction(
+            QgsApplication.getThemeIcon("/mActionRemoveSelectedFeature.svg"), QCoreApplication.translate("RAT", "Remove Row"))
+        self.mActionRemoveColumn = QAction(
+            QgsApplication.getThemeIcon("/mActionDeleteAttribute.svg"), QCoreApplication.translate("RAT", "Remove Column"))
+        self.mActionSaveChanges = QAction(
+            QgsApplication.getThemeIcon("/mActionSaveAllEdits.svg"), QCoreApplication.translate("RAT", "&Save Changes"))
 
-        stylesheet = "QToolButton {padding: 1px;}"
-        self.mToggleEditingToolButton.setStyleSheet(stylesheet)
-        self.mAddColumnToolButton.setStyleSheet(
-            stylesheet)
-        self.mRemoveColumnToolButton.setStyleSheet(
-            stylesheet)
-        self.mSaveChangesToolButton.setStyleSheet(
-            stylesheet)
+        self.mEditToolBar = QToolBar()
+        self.mEditToolBar.addAction(self.mActionToggleEditing)
+        self.mEditToolBar.addAction(self.mActionNewColumn)
+        self.mEditToolBar.addAction(self.mActionNewRow)
+        self.mEditToolBar.addAction(self.mActionRemoveColumn)
+        self.mEditToolBar.addAction(self.mActionRemoveRow)
+        self.mEditToolBar.addAction(self.mActionSaveChanges)
+        self.layout().setMenuBar(self.mEditToolBar)
 
         assert self.loadRat(0)
 
@@ -119,12 +122,12 @@ class RasterAttributeTableDialog(QDialog):
         self.mButtonBox.accepted.connect(self.accept)
         self.mButtonBox.rejected.connect(self.reject)
 
-        self.mToggleEditingToolButton.toggled.connect(self.setEditable)
-        self.mSaveChangesToolButton.clicked.connect(self.saveChanges)
-        self.mAddColumnToolButton.clicked.connect(self.addColumn)
-        self.mRemoveColumnToolButton.clicked.connect(self.removeColumn)
-        self.mAddRowToolButton.clicked.connect(self.addRow)
-        self.mRemoveRowToolButton.clicked.connect(self.removeRow)
+        self.mActionToggleEditing.triggered.connect(self.setEditable)
+        self.mActionSaveChanges.triggered.connect(self.saveChanges)
+        self.mActionNewColumn.triggered.connect(self.addColumn)
+        self.mActionRemoveColumn.triggered.connect(self.removeColumn)
+        self.mActionNewRow.triggered.connect(self.addRow)
+        self.mActionRemoveRow.triggered.connect(self.removeRow)
 
         try:
             self.restoreGeometry(QgsSettings().value(
@@ -315,12 +318,12 @@ class RasterAttributeTableDialog(QDialog):
         enable_editing_buttons = self.mRATView.selectionModel(
         ).currentIndex().isValid() and self.editable
 
-        self.mAddColumnToolButton.setEnabled(
+        self.mActionNewColumn.setEnabled(
             enable_editing_buttons and self.canAddAnyColumn())
-        self.mRemoveColumnToolButton.setEnabled(enable_editing_buttons)
-        self.mAddRowToolButton.setEnabled(enable_editing_buttons)
-        self.mRemoveRowToolButton.setEnabled(enable_editing_buttons)
-        self.mSaveChangesToolButton.setEnabled(self.is_dirty)
+        self.mActionRemoveColumn.setEnabled(enable_editing_buttons)
+        self.mActionNewRow.setEnabled(enable_editing_buttons)
+        self.mActionRemoveRow.setEnabled(enable_editing_buttons)
+        self.mActionSaveChanges.setEnabled(self.is_dirty)
 
     def setEditable(self, editable):
 

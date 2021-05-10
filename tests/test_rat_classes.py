@@ -397,6 +397,49 @@ class TestRATClasses(TestCase):
             gdal.GFU_Max,
         })
 
+    def test_charset(self):
+        """Test that we can save/load non-ASCII chars"""
+
+        rat = get_rat(self.raster_layer, 1)
+        self.assertTrue(rat.isValid())
+
+        # Delete the layer and the PAM file
+        raster_source = self.raster_layer.source()
+
+        pam_path = raster_source + '.aux.xml'
+        dbf_path = raster_source + '.vat.dbf'
+
+        del (self.raster_layer)
+        os.unlink(pam_path)
+
+        rat.data['License_Name'][0] = 'Some accented chars èé 😁'
+
+        rat.save_as_dbf(raster_source)
+        self.assertTrue(os.path.exists(dbf_path))
+
+        self.raster_layer = QgsRasterLayer(
+            raster_source, 'rat_test', 'gdal')
+
+        rat_dbf = get_rat(self.raster_layer, 1)
+        self.assertTrue(rat_dbf.isValid())
+
+        self.assertEqual(rat_dbf.data['License_Na']
+                         [0], 'Some accented chars èé 😁')
+
+        # Save as XML
+        rat.save_as_xml(raster_source, 1)
+        self.assertTrue(os.path.exists(pam_path))
+        del (self.raster_layer)
+        os.unlink(dbf_path)
+
+        self.raster_layer = QgsRasterLayer(
+            raster_source, 'rat_test', 'gdal')
+
+        rat_xml = get_rat(self.raster_layer, 1)
+        self.assertTrue(rat_xml.isValid())
+
+        self.assertEqual(rat_xml.data['License_Name']
+                         [0], 'Some accented chars èé 😁')
 
 
 if __name__ == '__main__':
