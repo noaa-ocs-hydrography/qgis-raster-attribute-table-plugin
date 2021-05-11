@@ -18,6 +18,7 @@ from osgeo import gdal
 from unittest import TestCase, main, skipIf
 
 from qgis.core import (
+    Qgis,
     QgsApplication,
     QgsRasterLayer,
     QgsSingleBandPseudoColorRenderer,
@@ -163,8 +164,13 @@ class RatUtilsTest(TestCase):
 
         colors = {}
 
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            offset = 1
+        else:
+            offset = 0
+
         for idx in unique_row_indexes:
-            klass = classes[idx - 1]
+            klass = classes[idx - offset]
             colors[klass.label] = klass.color.name()
 
         for klass in classes:
@@ -356,9 +362,13 @@ class RatUtilsTest(TestCase):
                          3000000000000.0, 1e+20, 5e+25])
 
         # Round trip tests
-        unique_indexes = rat_classify(
-            raster_layer, band, rat, 'Class', ramp=None)
-        self.assertEqual(unique_indexes, [1, 2, 3])
+        unique_indexes=rat_classify(raster_layer, band, rat, 'Class', ramp=None)
+
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_indexes, [1, 2, 3])
+        else:
+            self.assertEqual(unique_indexes, [0, 1, 2])
+
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
             tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
         self.assertTrue(rat2.isValid())
@@ -373,7 +383,11 @@ class RatUtilsTest(TestCase):
         # Reclass on class 2
         unique_indexes = rat_classify(
             raster_layer, band, rat, 'Class2', ramp=None)
-        self.assertEqual(unique_indexes, [1, 2])
+
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_indexes, [1, 2])
+        else:
+            self.assertEqual(unique_indexes, [0, 1])
 
         rat2 = create_rat_from_raster(raster_layer, True, os.path.join(
             tmp_dir.path(), '2x2_1_BAND_FLOAT.tif.vat.dbf'))
@@ -400,7 +414,10 @@ class RatUtilsTest(TestCase):
         rat = get_rat(raster_layer, 1)
         self.assertTrue(rat.isValid())
         unique_indexes = rat_classify(raster_layer, 1, rat, 'class2')
-        self.assertEqual(unique_indexes, [1, 2, 3])
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_indexes, [1, 2, 3])
+        else:
+            self.assertEqual(unique_indexes, [0, 1, 2])
 
     def test_data_type_name(self):
 
@@ -443,7 +460,10 @@ class RatUtilsTest(TestCase):
         self.assertIn(gdal.GFU_PixelCount, rat.field_usages)
 
         unique_row_indexes = rat_classify(raster_layer, 1, rat, 'Class')
-        self.assertEqual(unique_row_indexes, [1, 2])
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_row_indexes, [1, 2])
+        else:
+            self.assertEqual(unique_row_indexes, [0, 1])
 
     def test_rat_xml_no_data_athematic(self):
         """Test we can open an XML rat with a missing value (band 1, value 1+E20)"""
@@ -461,7 +481,10 @@ class RatUtilsTest(TestCase):
         self.assertEqual(rat.thematic_type, gdal.GRTT_ATHEMATIC)
 
         unique_row_indexes = rat_classify(raster_layer, 1, rat, 'Class')
-        self.assertEqual(unique_row_indexes, [1, 2])
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_row_indexes, [1, 2])
+        else:
+            self.assertEqual(unique_row_indexes, [0, 1])
 
     def test_homogenize_colors(self):
         """Test color homogenize"""
@@ -478,7 +501,10 @@ class RatUtilsTest(TestCase):
         self.assertTrue(rat.isValid())
 
         unique_labels = rat_classify(raster_layer, 1, rat, 'EVT_NAME')
-        self.assertEqual(unique_labels, list(range(1, 60)))
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_labels, list(range(1, 60)))
+        else:
+            self.assertEqual(unique_labels, list(range(0, 59)))
 
         # Get color map
         color_map = {}
@@ -491,7 +517,10 @@ class RatUtilsTest(TestCase):
 
         # Reclass
         unique_labels = rat_classify(raster_layer, 1, rat, 'NVCSCLASS')
-        self.assertEqual(unique_labels, [1, 3, 5, 6, 7, 22, 31, 41, 44])
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            self.assertEqual(unique_labels, [1, 3, 5, 6, 7, 22, 31, 41, 44])
+        else:
+            self.assertEqual(unique_labels, [0, 2, 4, 5, 6, 21, 30, 40, 43])
 
         color_map = {}
         for klass in raster_layer.renderer().classes():
