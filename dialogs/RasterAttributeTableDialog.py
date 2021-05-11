@@ -381,7 +381,10 @@ class RasterAttributeTableDialog(QDialog):
             # TODO: ramp & feedback
             unique_class_row_indexes = rat_classify(
                 self.raster_layer, self.band, self.rat, criteria)
-            unique_class_row_indexes.insert(0, 0)
+                
+            if Qgis.QGIS_VERSION_INT >= 31800:
+                unique_class_row_indexes.insert(0, 0)
+
             if self.iface is not None:
                 deduplicate_legend_entries(
                     self.iface, self.raster_layer, criteria, unique_class_row_indexes, expand=True)

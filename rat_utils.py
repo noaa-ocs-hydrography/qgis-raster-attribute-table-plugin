@@ -18,6 +18,7 @@ from osgeo import gdal
 from qgis.PyQt.QtCore import QFileInfo, QVariant, QCoreApplication
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (
+    Qgis,
     QgsVectorLayer,
     QgsPalettedRasterRenderer,
     QgsSingleBandPseudoColorRenderer,
@@ -260,6 +261,12 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
     label_colors = {}
     unique_indexes = []
 
+    # QGIS >= 3.18 for first element label
+    if Qgis.QGIS_VERSION_INT >= 31800:
+        base_legend_row_index = 1
+    else:
+        base_legend_row_index = 0
+
     if rat.thematic_type == gdal.GRTT_THEMATIC:
 
         # Use paletted
@@ -274,7 +281,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         classes = QgsPalettedRasterRenderer.classDataFromRaster(
             raster_layer.dataProvider(), band, ramp, feedback)
 
-        row_index = 1
+        row_index = base_legend_row_index
         for klass in classes:
             value = int(klass.value) if is_integer else klass.value
             try:
@@ -310,7 +317,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
         max_value_column = rat.field_name(gdal.GFU_Max)
 
         # Collect unique values and colors from criteria
-        row_index = 1
+        row_index = base_legend_row_index
         unique_labels = []
         for index in range(len(labels)):
             label = labels[index]
@@ -394,10 +401,16 @@ def deduplicate_legend_entries(iface, raster_layer, criteria, unique_class_row_i
     node = root.findLayer(raster_layer.id())
 
     if unique_class_row_indexes is None:
-        unique_class_row_indexes = [0]
+        # QGIS >= 3.18 for first element label
+        if Qgis.QGIS_VERSION_INT >= 31800:
+            unique_class_row_indexes = [0]
+            idx = 1
+        else:
+            unique_class_row_indexes = []
+            idx = 0
+
         renderer = raster_layer.renderer()
         unique_labels = []
-        idx = 1
 
         # Get classes from renderer
         if isinstance(raster_layer.renderer(), QgsPalettedRasterRenderer):
@@ -423,8 +436,12 @@ def deduplicate_legend_entries(iface, raster_layer, criteria, unique_class_row_i
         f'Deduplicating legend entries for layer {raster_layer.name()}: {unique_class_row_indexes}')
     QgsMapLayerLegendUtils.setLegendNodeOrder(
         node, unique_class_row_indexes)
-    QgsMapLayerLegendUtils.setLegendNodeUserLabel(
-        node, 0, criteria)
+
+    # QGIS >= 3.18 for first element label
+    if Qgis.QGIS_VERSION_INT >= 31800:
+        QgsMapLayerLegendUtils.setLegendNodeUserLabel(
+            node, 0, criteria)
+
     model.refreshLayerLegend(node)
     if expand is not None:
         node.setExpanded(True)
