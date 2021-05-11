@@ -16,6 +16,7 @@ The plugin offers also limited support for continuous raster RATs using the sing
 ## Supported features
 
 + RAT creation from a paletted/unique values styled layer
++ RAT creation from a singleband/pseudocolot styled layer
 + QGIS style classification on arbitrary RAT columns
 + RAT editing:
 
