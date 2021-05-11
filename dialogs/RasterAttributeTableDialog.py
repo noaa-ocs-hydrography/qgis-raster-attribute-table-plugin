@@ -93,7 +93,9 @@ class RasterAttributeTableDialog(QDialog):
                 if self.loadRat(band):
                     self.band = band
 
-        self.mRasterBand.setText(raster_layer.bandName(self.band))
+        self.mRasterBandsComboBox.addItems(
+            [raster_layer.bandName(bn) for bn in range(1, raster_layer.bandCount() + 1)])
+        self.mRasterBandsComboBox.setCurrentIndex(self.band - 1)
 
         # Setup edit menu actions
         self.mActionToggleEditing = QAction(
@@ -132,6 +134,9 @@ class RasterAttributeTableDialog(QDialog):
         self.mActionRemoveColumn.triggered.connect(self.removeColumn)
         self.mActionNewRow.triggered.connect(self.addRow)
         self.mActionRemoveRow.triggered.connect(self.removeRow)
+
+        self.mRasterBandsComboBox.currentIndexChanged.connect(
+            self.bandChanged)
 
         try:
             self.restoreGeometry(QgsSettings().value(
@@ -407,14 +412,29 @@ class RasterAttributeTableDialog(QDialog):
         rat_log('Model is dirty')
         self.updateButtons()
 
+    def bandChanged(self, band_0_based):
+        """Triggered when band changed from combo box"""
+
+        band = band_0_based + 1
+        if self.loadRat(band):
+            self.band = band
+        else:
+            self.mRasterBandsComboBox.setCurrentIndex(self.band - 1)
+            QMessageBox.warning(None,
+                                QCoreApplication.translate(
+                                    'RAT', 'Error changing band'),
+                                QCoreApplication.translate(
+                                    'RAT', f'The selected band <b>{band}</b> does not have an associated RAT.'))
+
     def loadRat(self, band) -> bool:
         """Load RAT for raster band 1-based"""
 
         self.mClassifyComboBox.clear()
 
-        self.rat = get_rat(self.raster_layer, band)
+        rat = get_rat(self.raster_layer, band)
 
-        if self.rat.keys:
+        if rat.isValid():
+            self.rat = rat
             self.model = RATModel(self.rat)
             if os.environ.get('CI'):
                 self.tester = QAbstractItemModelTester(self.model)

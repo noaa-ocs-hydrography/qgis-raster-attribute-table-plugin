@@ -30,13 +30,16 @@
     <number>3</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,1,0">
+    <layout class="QHBoxLayout" name="mTopLayout" stretch="0,1,0,0,1,0">
      <item>
-      <widget class="QLabel" name="mRasterBand">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Raster Band</string>
+        <string>Raster band</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="mRasterBandsComboBox"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
@@ -79,7 +82,7 @@
       <bool>true</bool>
      </property>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>30</number>
+      <number>28</number>
      </attribute>
     </widget>
    </item>
