@@ -25,6 +25,7 @@ from qgis.core import (
     QgsRandomColorRamp,
     QgsColorRampShader,
     QgsRasterShader,
+    QgsRasterRange,
     QgsPresetSchemeColorRamp,
     QgsMessageLog,
     Qgis,
@@ -275,8 +276,19 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
 
         row_index = 1
         for klass in classes:
-            index = values.index(
-                int(klass.value) if is_integer else klass.value)
+            value = int(klass.value) if is_integer else klass.value
+            try:
+                index = values.index(value)
+            except ValueError:   # NODATA
+                rat_log(
+                    f'Value {value} not found in RAT, assuming NODATA', Qgis.Warning)
+                data_provider = raster_layer.dataProvider()
+                if not data_provider.userNoDataValuesContains(band, value):
+                    nodata = data_provider.userNoDataValues(band)
+                    nodata_value = QgsRasterRange(value, value)
+                    nodata.append(nodata_value)
+                    data_provider.setUserNoDataValue(band, nodata)
+                continue
             klass.label = str(labels[index])
             if klass.label not in label_colors:
                 unique_indexes.append(row_index)

@@ -425,6 +425,44 @@ class RatUtilsTest(TestCase):
         self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
         self.assertIn(gdal.GFU_PixelCount, rat.field_usages)
 
+    def test_rat_xml_no_data_thematic(self):
+        """Test we can open an XML rat with a missing value (band 1, value 4)"""
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16_NODATA.tif'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_2_BANDS_INT16_NODATA.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), '2x2_2_BANDS_INT16_NODATA.tif'), 'rat_test', 'gdal')
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.thematic_type, gdal.GRTT_THEMATIC)
+        self.assertIn(gdal.GFU_PixelCount, rat.field_usages)
+
+        unique_row_indexes = rat_classify(raster_layer, 1, rat, 'Class')
+        self.assertEqual(unique_row_indexes, [1, 2])
+
+    def test_rat_xml_no_data_athematic(self):
+        """Test we can open an XML rat with a missing value (band 1, value 1+E20)"""
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_1_BAND_FLOAT_NODATA.tif'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', '2x2_1_BAND_FLOAT_NODATA.tif.aux.xml'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), '2x2_1_BAND_FLOAT_NODATA.tif'), 'rat_test', 'gdal')
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+        self.assertEqual(rat.thematic_type, gdal.GRTT_ATHEMATIC)
+
+        unique_row_indexes = rat_classify(raster_layer, 1, rat, 'Class')
+        self.assertEqual(unique_row_indexes, [1, 2])
+
+
 
 if __name__ == '__main__':
     main()
