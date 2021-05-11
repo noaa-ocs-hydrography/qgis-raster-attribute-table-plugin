@@ -84,9 +84,14 @@ class RasterAttributeTableDialog(QDialog):
         self.editable = False
         self.is_dirty = False
 
-        # Get band from renderer
-        self.band = raster_layer.renderer().band()
-        assert self.loadRat(self.band)
+        # Get band from renderer or data provider
+        try:
+            self.band = raster_layer.renderer().band()
+            self.loadRat(self.band)
+        except AttributeError:
+            for band in range(1, raster_layer.dataProvider().bandCount() + 1):
+                if self.loadRat(band):
+                    self.band = band
 
         self.mRasterBand.setText(raster_layer.bandName(self.band))
 
@@ -439,5 +444,5 @@ class RasterAttributeTableDialog(QDialog):
             return True
         else:
             rat_log(QCoreApplication.translate(
-                'RAT', 'There is no Raster Attribute Table for the selected raster.'), Qgis.Critical)
+                'RAT', 'There is no Raster Attribute Table for the selected raster band %s.' % band), Qgis.Warning)
             return False
