@@ -482,7 +482,7 @@ def homogenize_colors(raster_layer) -> bool:
                         colorRampShaderFcn.setColorRampItemList(items)
 
     if require_changes:
-        # raster_layer.setRenderer(renderer)
+        raster_layer.setRenderer(renderer)
         raster_layer.triggerRepaint()
 
     return require_changes

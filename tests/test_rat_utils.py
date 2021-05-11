@@ -39,6 +39,7 @@ from rat_utils import (
     can_create_rat,
     create_rat_from_raster,
     data_type_name,
+    homogenize_colors,
 )
 
 from rat_constants import RAT_COLOR_HEADER_NAME
@@ -462,6 +463,69 @@ class RatUtilsTest(TestCase):
         unique_row_indexes = rat_classify(raster_layer, 1, rat, 'Class')
         self.assertEqual(unique_row_indexes, [1, 2])
 
+    def test_homogenize_colors(self):
+        """Test color homogenize"""
+
+        tmp_dir = QTemporaryDir()
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img'), tmp_dir.path())
+        shutil.copy(os.path.join(os.path.dirname(
+            __file__), 'data', 'ExistingVegetationTypes_sample.img.vat.dbf'), tmp_dir.path())
+
+        raster_layer = QgsRasterLayer(os.path.join(
+            tmp_dir.path(), 'ExistingVegetationTypes_sample.img'), 'rat_test', 'gdal')
+        rat = get_rat(raster_layer, 1)
+        self.assertTrue(rat.isValid())
+
+        unique_labels = rat_classify(raster_layer, 1, rat, 'EVT_NAME')
+        self.assertEqual(unique_labels, list(range(1, 60)))
+
+        # Get color map
+        color_map = {}
+        for klass in raster_layer.renderer().classes():
+            color_map[klass.value] = klass.color.name()
+
+        # Two different colors for EVT_NAME
+        self.assertEqual(color_map[11.0], '#0000ff')
+        self.assertEqual(color_map[12.0], '#9fa1f0')
+
+        # Reclass
+        unique_labels = rat_classify(raster_layer, 1, rat, 'NVCSCLASS')
+        self.assertEqual(unique_labels, [1, 3, 5, 6, 7, 22, 31, 41, 44])
+
+        color_map = {}
+        for klass in raster_layer.renderer().classes():
+            color_map[klass.value] = klass.color.name()
+
+        # Same colors for NVCSCLASS
+        self.assertEqual(color_map[11.0], '#0000ff')
+        self.assertEqual(color_map[12.0], '#0000ff')
+
+        # Manually change one color
+        classes = raster_layer.renderer().classes()
+        classes[0].color = QColor(10, 20, 30)
+
+        renderer = QgsPalettedRasterRenderer(
+            raster_layer.dataProvider(), 1, classes)
+        raster_layer.setRenderer(renderer)
+
+        color_map = {}
+        for klass in raster_layer.renderer().classes():
+            color_map[klass.value] = klass.color.name()
+
+        # Manually changed colors for NVCSCLASS
+        self.assertEqual(color_map[11.0], '#0a141e')
+        self.assertEqual(color_map[12.0], '#0000ff')
+
+        self.assertTrue(homogenize_colors(raster_layer))
+
+        color_map = {}
+        for klass in raster_layer.renderer().classes():
+            color_map[klass.value] = klass.color.name()
+
+        # Same colors for NVCSCLASS
+        self.assertEqual(color_map[11.0], '#0a141e')
+        self.assertEqual(color_map[12.0], '#0a141e')
 
 
 if __name__ == '__main__':

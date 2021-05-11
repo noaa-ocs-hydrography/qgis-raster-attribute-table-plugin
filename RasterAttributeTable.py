@@ -163,6 +163,8 @@ class RasterAttributeTable(QObject):
             pass
 
         if criteria and has_rat(raster_layer):
+            rat_log(
+                f'Renderer changed for layer {raster_layer.name()} criteria {criteria}, homogenizing colors...')
             if homogenize_colors(raster_layer):
                 self.iface.messageBar().pushMessage(
                     QCoreApplication.translate('RAT', "Style reset"),
