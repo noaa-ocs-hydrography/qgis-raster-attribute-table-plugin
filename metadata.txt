@@ -4,7 +4,7 @@ description:Display and manage Raster Attribute Tables.
 
 version:1.0
 qgisMinimumVersion:3.16
-experimental:False
+experimental:True
 homepage:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
 repository:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
 tracker:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/issues
