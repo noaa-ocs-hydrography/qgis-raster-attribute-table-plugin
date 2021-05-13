@@ -36,15 +36,15 @@ jobs:
         xvfb-run pytest --forked -v
     - name: Prepare artifact
       run: |
-        git archive --prefix RAT/RasterAttributeTable/ --format=zip -o rat-plugin.zip ${{ steps.extract_branch.outputs.branch }}
+        git archive --prefix RAT/RasterAttributeTable/ --format=zip -o rat-plugin.zip ${{ github.sha }}
         unzip rat-plugin.zip
     - uses: actions/upload-artifact@v2
       with:
         name: rat-plugin.zip
         path: ./RAT
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
-      with:
-        limit-access-to-actor: true
+    #- name: Setup tmate session
+    #  if: ${{ failure() }}
+    #  uses: mxschmitt/action-tmate@v3
+    #  with:
+    #    limit-access-to-actor: true
 
