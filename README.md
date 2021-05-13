@@ -1,12 +1,12 @@
 
-![test_workflow](https://github.com/elpaso/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg)
+![test_workflow](https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg)
 
 # Raster Attribute Table QGIS Plugin
 
 QGIS plugin to display and edit Raster Attribute Tables (RATs) for discrete rasters using
 paletted/unique-values renderer.
 
-The plugin offers also limited support for continuous raster RATs using the single-band/presudocolor renderer.
+The plugin offers also limited support for continuous raster RATs using the single-band/psesudocolor renderer.
 
 ## Supported formats
 
@@ -16,7 +16,7 @@ The plugin offers also limited support for continuous raster RATs using the sing
 ## Supported features
 
 + RAT creation from a paletted/unique values styled layer
-+ RAT creation from a singleband/pseudocolot styled layer
++ RAT creation from a singleband/pseudocolor styled layer
 + QGIS style classification on arbitrary RAT columns
 + RAT editing:
 
