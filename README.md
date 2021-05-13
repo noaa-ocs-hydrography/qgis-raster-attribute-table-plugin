@@ -1,5 +1,4 @@
-
-![test_workflow](https://github.com/elpaso/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg)
+[![RAT Plugin CI tests](https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml)
 
 # Raster Attribute Table QGIS Plugin
 
