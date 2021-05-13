@@ -36,7 +36,7 @@ jobs:
         xvfb-run pytest --forked -v
     - name: Prepare artifact
       run: |
-        git archive --prefix RAT/RasterAttributeTable/ --format=zip -o rat-plugin.zip ${{ steps.extract_branch.outputs.branch }}
+        git archive --prefix RAT/RasterAttributeTable/ --format=zip -o rat-plugin.zip ${{ github.sha }}
         unzip rat-plugin.zip
     - uses: actions/upload-artifact@v2
       with:
