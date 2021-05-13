@@ -1,14 +1,15 @@
 [general]
 name:RasterAttributeTable
-description:Display and manage a RAT.
+description:Display and manage Raster Attribute Tables.
 
 version:1.0
 qgisMinimumVersion:3.16
 experimental:False
-homepage:https://github.com/elpaso/qgis-raster-attribute-table-plugin
-repository:https://github.com/elpaso/qgis-raster-attribute-table-plugin
-tracker:https://github.com/elpaso/qgis-raster-attribute-table-plugin/issues
-about:Display and manage a RAT.
+homepage:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
+repository:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
+tracker:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/issues
+
+about:Display and manage Raster Attribute Tables.
 
 changelog:
     Version 1.0:
