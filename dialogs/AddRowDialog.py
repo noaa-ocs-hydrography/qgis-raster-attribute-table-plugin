@@ -24,7 +24,7 @@ from qgis.core import Qgis, QgsApplication, QgsSettings
 try:
     from ..rat_utils import data_type_name
     from ..rat_log import rat_log
-except ValueError:
+except (ImportError, ValueError):
     from rat_utils import data_type_name
     from rat_log import rat_log
 

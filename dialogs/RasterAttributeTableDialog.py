@@ -34,7 +34,7 @@ try:
     from ..rat_log import rat_log
     from ..rat_classes import RATField
     from ..rat_constants import RAT_CUSTOM_PROPERTY_CLASSIFICATION_CRITERIA, RAT_COLOR_HEADER_NAME
-except ValueError:
+except (ImportError, ValueError):
     from rat_utils import get_rat, rat_classify, deduplicate_legend_entries, rat_column_info, rat_supported_column_info
     from rat_log import rat_log
     from rat_model import RATModel
