@@ -610,8 +610,9 @@ def create_rat_from_raster(raster_layer, is_dbf, path, feedback=QgsRasterBlockFe
             fields['Count'] = RATField(
                 'Count', gdal.GFU_PixelCount, gdal.GFT_Integer)
             data['Count'] = []
+            vector_is_complete = (len(histogram.histogramVector) == len(classes))
             for val in histogram.histogramVector:
-                if val != 0:
+                if val != 0 or vector_is_complete:
                     histogram_values.append(val)
 
     fields['Class'] = RATField('Class', gdal.GFU_Name, gdal.GFT_String)
