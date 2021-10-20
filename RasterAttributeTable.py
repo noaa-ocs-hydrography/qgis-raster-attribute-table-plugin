@@ -23,7 +23,7 @@ from functools import partial
 from osgeo import gdal
 from qgis.core import (QgsApplication, QgsMapLayer, QgsMapLayerType,
                        QgsMessageLog, QgsProject, Qgis)
-from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSlot, QObject
+from qgis.PyQt.QtCore import QCoreApplication, Qt, QObject
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox, QPushButton, QMenu
 
@@ -92,7 +92,6 @@ class RasterAttributeTable(QObject):
 
         rat_log("GUI unloaded")
 
-    @pyqtSlot(QgsMapLayer)
     def notifyUserOnRatAvailable(self, layer):
 
         if layer and layer.type() == QgsMapLayerType.RasterLayer:
@@ -108,7 +107,6 @@ class RasterAttributeTable(QObject):
                     widget.layout().addWidget(button)
                     self.iface.messageBar().pushWidget(widget, Qgis.Info)
 
-    @pyqtSlot(QgsMapLayer)
     def updateRatActions(self, *args):
 
         self.iface.removeCustomActionForLayerType(self.open_rat_action)
@@ -141,7 +139,6 @@ class RasterAttributeTable(QObject):
                         rat_log("Create RAT action added for: %s" %
                                 layer.name())
 
-    @pyqtSlot(QgsMapLayer)
     def connectRendererChanged(self, layer):
         """Makes sure the actions are updated if the renderer changes"""
 
@@ -149,7 +146,6 @@ class RasterAttributeTable(QObject):
             layer.rendererChanged.connect(
                 self.rendererChanged, Qt.UniqueConnection)
 
-    @pyqtSlot()
     def rendererChanged(self):
 
         raster_layer = self.sender()
