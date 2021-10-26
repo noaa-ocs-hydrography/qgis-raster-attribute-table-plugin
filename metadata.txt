@@ -2,9 +2,9 @@
 name:RasterAttributeTable
 description:Display and manage Raster Attribute Tables.
 
-version:1.0
+version:1.1
 qgisMinimumVersion:3.16
-experimental:True
+experimental:False
 homepage:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
 repository:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin
 tracker:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/issues
@@ -12,6 +12,9 @@ tracker:https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plug
 about:Display and manage Raster Attribute Tables.
 
 changelog:
+    Version 1.1:
+        Bugfixes found at https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/pull/17
+        
     Version 1.0:
     * initial implementation
 
