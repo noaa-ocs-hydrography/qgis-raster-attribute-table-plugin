@@ -335,7 +335,7 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
             ramp.setTotalColorCount(len(unique_labels))
             i = 0
             for index in unique_indexes:
-                label_colors[labels[index]] = ramp.color(ramp.value(i))
+                label_colors[labels[index-1]] = ramp.color(i)
                 i += 1
 
         # Create values for the ramp
