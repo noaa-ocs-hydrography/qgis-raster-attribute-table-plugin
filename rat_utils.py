@@ -335,7 +335,9 @@ def rat_classify(raster_layer, band, rat, criteria, ramp=None, feedback=QgsRaste
             ramp.setTotalColorCount(len(unique_labels))
             i = 0
             for index in unique_indexes:
-                label_colors[labels[index]] = ramp.color(ramp.value(i))
+                if Qgis.QGIS_VERSION_INT >= 31803:
+                    index -= 1
+                label_colors[labels[index]] = ramp.color(i)
                 i += 1
 
         # Create values for the ramp
