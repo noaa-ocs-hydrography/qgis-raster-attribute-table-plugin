@@ -21,7 +21,7 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install flake8 pytest-xdist
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 46B5721DBBD2996A
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 73f1a14c5e444875
         sudo sh -c 'echo "deb [arch=amd64] https://qgis.org/ubuntu-ltr focal main" >> /etc/apt/sources.list'
         sudo apt update
         sudo apt install qgis xvfb
