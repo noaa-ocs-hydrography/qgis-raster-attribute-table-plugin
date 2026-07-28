@@ -1,4 +1,4 @@
-
+# This plugin is deprecated as the functionality was added in QGIS 3.30.
 [![RAT Plugin CI tests](https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/noaa-ocs-hydrography/qgis-raster-attribute-table-plugin/actions/workflows/python-app.yml)
 
 # Raster Attribute Table QGIS Plugin
